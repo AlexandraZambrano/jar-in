@@ -1,0 +1,21 @@
+{
+  "pages": [
+    { "id": "screens", "name": "Sticker Sheet — screens" },
+    { "id": "system", "name": "Design tokens" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "page": "screens", "x": 0, "y": 0, "w": 390, "h": 960, "title": "Home — default (light)" },
+    { "file": "CalmMode.dc.html", "page": "screens", "x": 480, "y": 0, "w": 390, "h": 960, "title": "Home — Calm mode" },
+    { "file": "ColorBlind.dc.html", "page": "screens", "x": 960, "y": 0, "w": 390, "h": 960, "title": "Home — Colour-blind safe" },
+    { "file": "DarkMode.dc.html", "page": "screens", "x": 1440, "y": 0, "w": 390, "h": 960, "title": "Home — Dark mode" },
+    { "file": "Tokens.dc.html", "page": "system", "x": 0, "y": 0, "w": 960, "h": 1560, "title": "Sticker Sheet — tokens" }
+  ],
+  "annotations": [
+    { "id": "note-main", "page": "screens", "x": 0, "y": -170, "w": 380, "text": "DEFAULT — Sticker Sheet. Die-cut stickers (white border, faint ring, soft shadow, slight seeded tilt), icon-bubbles on a plan-vs-actual donut, candy jar fills. The coach uses the Paper Ledger margin-note: legal-pad paper, hard offset shadow, tape, handwritten face — a real note pinned onto the sheet." },
+    { "id": "note-calm", "page": "screens", "x": 480, "y": -170, "w": 380, "text": "CALM MODE — for motion sensitivity / low vision. No tilt, no gloss, no page texture; separation by a solid 2px ink ring instead of shadow. Bigger, heavier text. Taller bordered progress bars. Donut static with numeric labels. Coach note keeps the paper look but a legible face. Auto-on with prefers-reduced-motion / prefers-contrast, plus a manual toggle." },
+    { "id": "note-cvd", "page": "screens", "x": 960, "y": -170, "w": 380, "text": "COLOUR-BLIND SAFE — Okabe–Ito jar palette, and every jar also carries a fixed pattern + icon + text label + numeric %. Donut segments get bg-colour dividers and a leader-line legend. State shown with ✓ / ⚠ glyphs, never colour alone. Independent toggle — combines with Calm and Dark." },
+    { "id": "note-dark", "page": "screens", "x": 1440, "y": -170, "w": 380, "text": "DARK MODE — warm eggplant base, not slate. Stickers become raised dark surfaces with a hue left-edge and a hue-tinted icon chip; fills are never flooded. Jar hues lightened ~10% so they don't vibrate on dark. Coach note becomes aged paper. Follows prefers-color-scheme + toggle." },
+    { "id": "note-tokens", "page": "system", "x": 0, "y": -120, "w": 620, "text": "The system behind the four screens: type ramp, colour roles (light + dark), both jar palettes, the sticker and coach-note recipes, and the accessibility-mode matrix. The full written spec lives at docs/DESIGN-STICKER-SHEET.md in the repo." }
+  ],
+  "launch": { "view": "canvas", "page": "screens" }
+}

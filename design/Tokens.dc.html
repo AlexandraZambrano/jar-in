@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+    .card { background: #fff; border: 4px solid #fff; box-shadow: 0 6px 14px rgba(43,36,64,0.14), 0 0 0 1.5px rgba(43,36,64,0.12); border-radius: 16px; padding: 20px; }
+    .h { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px; color: #2B2440; margin: 0 0 14px; }
+    .sw { height: 40px; border-radius: 8px; border: 2px solid #2B2440; }
+    .k { font-size: 10px; color: #6E6685; }
+    .p-hatch { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0 3px, transparent 3px 8px); }
+    .p-dots { background-image: radial-gradient(rgba(43,36,64,0.34) 1.6px, transparent 2px); background-size: 9px 9px; }
+    .p-hline { background-image: repeating-linear-gradient(0deg, rgba(43,36,64,0.32) 0 3px, transparent 3px 9px); }
+    .p-grid { background-image: repeating-linear-gradient(0deg, rgba(43,36,64,0.3) 0 2px, transparent 2px 8px), repeating-linear-gradient(90deg, rgba(43,36,64,0.3) 0 2px, transparent 2px 8px); }
+    .p-vline { background-image: repeating-linear-gradient(90deg, rgba(43,36,64,0.32) 0 3px, transparent 3px 9px); }
+  </style>
+</helmet>
+
+<div style="width: 960px; min-height: 1560px; background: #FFF6E9; background-image: radial-gradient(rgba(43,36,64,0.06) 1.6px, transparent 1.7px); background-size: 22px 22px; color: #2B2440; padding: 28px; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; flex-direction: column; gap: 5px;">
+    <span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 25px; letter-spacing: -0.01em;">Sticker Sheet &mdash; design tokens</span>
+    <span style="font-size: 12.5px; color: #6E6685; line-height: 1.5;">Playful but readable. Every jar is encoded three ways &mdash; colour + icon + label &mdash; so no single channel is load-bearing. Three switchable modes (Calm, Colour-blind safe, Dark) layer on the same components. Full write-up: <strong>docs/DESIGN-STICKER-SHEET.md</strong>.</span>
+  </div>
+
+  <!-- TYPE -->
+  <div class="card">
+    <p class="h">Type ramp</p>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Display XL &middot; Fredoka 700 &middot; 34/36</span><span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 34px;">&euro;2,180</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Display L &middot; Fredoka 700 &middot; 24</span><span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 24px;">Your jars</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Title &middot; Fredoka 600 &middot; 15</span><span style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;">Safe fund</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Number &middot; Hanken 700 &middot; tabular</span><span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums;">&euro;3,200 / &euro;10,000 &middot; 29%</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Body &middot; Hanken 400 &middot; 13/1.5</span><span style="font-family: 'Hanken Grotesk', sans-serif; font-size: 13px;">Growth jar &middot; &euro;1,450 of &euro;5,000 saved</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Caption &middot; Hanken 500 &middot; 11</span><span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 500; font-size: 11px;">FLOW &middot; resets monthly</span></div>
+      <div style="display: flex; align-items: baseline; gap: 16px;"><span style="width: 150px; font-size: 11px; color: #6E6685; flex-shrink: 0;">Coach note &middot; Caveat 500 &middot; 17</span><span style="font-family: 'Caveat', cursive; font-weight: 500; font-size: 17px;">Safe fund finishes 2 months early!</span></div>
+    </div>
+    <span style="display: block; margin-top: 14px; font-size: 11px; color: #6E6685; line-height: 1.5;">Caveat is decorative only, and only on the coach note. In <strong>Calm</strong> and <strong>Colour-blind safe</strong> modes the coach note swaps to Hanken 500 and every step goes up ~1px (body 13&rarr;15, caption 11&rarr;12).</span>
+  </div>
+
+  <!-- COLOUR ROLES -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="card">
+      <p class="h">Roles &mdash; Light</p>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div><span class="sw" style="background: #FFF6E9;"></span><div class="k">bg</div><div class="k">#FFF6E9</div></div>
+        <div><span class="sw" style="background: #FFFFFF;"></span><div class="k">surface</div><div class="k">#FFFFFF</div></div>
+        <div><span class="sw" style="background: #2B2440;"></span><div class="k">ink</div><div class="k">#2B2440</div></div>
+        <div><span class="sw" style="background: #6E6685;"></span><div class="k">ink-soft</div><div class="k">#6E6685</div></div>
+        <div><span class="sw" style="background: #E8384F;"></span><div class="k">accent</div><div class="k">#E8384F</div></div>
+        <div><span class="sw" style="background: #FBEFC2;"></span><div class="k">note-paper</div><div class="k">#FBEFC2</div></div>
+        <div style="grid-column: span 2;"><span class="sw" style="background: #fff; box-shadow: 0 6px 12px rgba(43,36,64,0.16), 0 0 0 1.5px rgba(43,36,64,0.12); border-color: #fff; border-width: 4px;"></span><div class="k">sticker: 4px #FFF border + 1.5px ring + soft shadow</div></div>
+      </div>
+    </div>
+    <div class="card" style="background: #241D30; border-color: #241D30; box-shadow: 0 6px 14px rgba(0,0,0,0.4);">
+      <p class="h" style="color: #F3ECFA;">Roles &mdash; Dark</p>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div><span class="sw" style="background: #17131F; border-color: #0E0A16;"></span><div class="k" style="color:#A99CC0;">bg</div><div class="k" style="color:#8E82A6;">#17131F</div></div>
+        <div><span class="sw" style="background: #241D30; border-color: #0E0A16;"></span><div class="k" style="color:#A99CC0;">surface</div><div class="k" style="color:#8E82A6;">#241D30</div></div>
+        <div><span class="sw" style="background: #F3ECFA; border-color: #0E0A16;"></span><div class="k" style="color:#A99CC0;">ink</div><div class="k" style="color:#8E82A6;">#F3ECFA</div></div>
+        <div><span class="sw" style="background: #A99CC0; border-color: #0E0A16;"></span><div class="k" style="color:#A99CC0;">ink-soft</div><div class="k" style="color:#8E82A6;">#A99CC0</div></div>
+        <div><span class="sw" style="background: #FF5C7A; border-color: #0E0A16;"></span><div class="k" style="color:#A99CC0;">accent</div><div class="k" style="color:#8E82A6;">#FF5C7A</div></div>
+        <div><span class="sw" style="background: #2E2A22; border-color: #5A5240;"></span><div class="k" style="color:#A99CC0;">note-paper</div><div class="k" style="color:#8E82A6;">#2E2A22</div></div>
+        <div style="grid-column: span 2;"><span class="sw" style="background: #241D30; border: 2px solid rgba(255,255,255,0.14);"></span><div class="k" style="color:#8E82A6;">sticker: raised surface, 2px hairline, hue on the left edge</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAR PALETTES -->
+  <div class="card">
+    <p class="h">Jar palette &mdash; default (Candy)</p>
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 8px;">
+      <div><span class="sw" style="background: #E8384F;"></span><div class="k">Essentials</div><div class="k">#E8384F</div></div>
+      <div><span class="sw" style="background: #2C63E6;"></span><div class="k">Investment</div><div class="k">#2C63E6</div></div>
+      <div><span class="sw" style="background: #8B44D7;"></span><div class="k">Safe fund</div><div class="k">#8B44D7</div></div>
+      <div><span class="sw" style="background: #F5820A;"></span><div class="k">Joy-jar</div><div class="k">#F5820A</div></div>
+      <div><span class="sw" style="background: #1FA971;"></span><div class="k">Health</div><div class="k">#1FA971</div></div>
+      <div><span class="sw" style="background: #64708A;"></span><div class="k">Other</div><div class="k">#64708A</div></div>
+    </div>
+    <span style="display: block; font-size: 11px; color: #6E6685; line-height: 1.5;">White text on Essentials / Investment / Safe fund / Health / Other; ink text on Joy-jar (and any fill lighter than ~55% luminance). Bright, but contrast is carried by the white sticker border, not the fill.</span>
+
+    <p class="h" style="margin: 20px 0 12px;">Jar palette &mdash; Colour-blind safe (Okabe&ndash;Ito + pattern)</p>
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+      <div><span class="sw" style="background: #D55E00;"></span><div class="k">Essentials &middot; solid</div><div class="k">#D55E00</div></div>
+      <div><span class="sw p-hatch" style="background-color: #0072B2;"></span><div class="k">Investment &middot; hatch</div><div class="k">#0072B2</div></div>
+      <div><span class="sw p-dots" style="background-color: #CC79A7;"></span><div class="k">Safe fund &middot; dots</div><div class="k">#CC79A7</div></div>
+      <div><span class="sw p-hline" style="background-color: #E69F00;"></span><div class="k">Joy-jar &middot; h-lines</div><div class="k">#E69F00</div></div>
+      <div><span class="sw p-grid" style="background-color: #009E73;"></span><div class="k">Health &middot; grid</div><div class="k">#009E73</div></div>
+      <div><span class="sw p-vline" style="background-color: #56B4E9;"></span><div class="k">Other &middot; v-lines</div><div class="k">#56B4E9</div></div>
+    </div>
+    <span style="display: block; margin-top: 8px; font-size: 11px; color: #6E6685; line-height: 1.5;">A jar&rsquo;s pattern is fixed at creation and travels with it everywhere &mdash; chip, bar, donut segment, legend. Donut segments also get 3px bg-colour dividers. State (over cap / on track) always carries a &#9888; or &#10003; glyph, never colour alone.</span>
+  </div>
+
+  <!-- COMPONENT RECIPES -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="card">
+      <p class="h">Sticker recipe</p>
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="width: 84px; height: 60px; border: 4px solid #fff; box-shadow: 0 6px 14px rgba(43,36,64,0.16), 0 0 0 1.5px rgba(43,36,64,0.12); border-radius: 14px; background: #2C63E6; flex-shrink: 0; transform: rotate(-2deg);"></span>
+        <span style="font-size: 11px; color: #6E6685; line-height: 1.55;">4px <strong>#FFF</strong> border (padding-box) &middot; 1.5px ink ring &middot; soft shadow <strong>0 6px 14px /16%</strong> &middot; radius 16 &middot; optional 20% top gloss &middot; decorative tilt &plusmn;0.6&ndash;1.5&deg; seeded from index (never random per render).</span>
+      </div>
+    </div>
+    <div class="card">
+      <p class="h">Coach note recipe</p>
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="width: 84px; height: 60px; background: #FBEFC2; border: 2px solid #2B2440; box-shadow: 4px 4px 0 rgba(43,36,64,0.22); border-radius: 4px; flex-shrink: 0; transform: rotate(-2deg);"></span>
+        <span style="font-size: 11px; color: #6E6685; line-height: 1.55;">Legal-pad paper, 2px ink border, <strong>hard</strong> 4px offset shadow (no blur), 5px accent spine, tape strip, radius 4, tilt &minus;1.4&deg;. Deliberately un-sticker-like &mdash; it&rsquo;s &ldquo;a real note pinned on top&rdquo;. Caveat face &rarr; Hanken in Calm / CVD.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- A11Y MATRIX -->
+  <div class="card">
+    <p class="h">Accessibility modes</p>
+    <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px 16px; font-size: 11.5px; line-height: 1.5;">
+      <span style="font-weight: 700;">Calm</span>
+      <span style="color: #4A4460;">Triggered by <code>prefers-reduced-motion</code>, <code>prefers-contrast: more</code>, or an in-app toggle. Tilt &rarr; 0. Gloss, page dot-grid, soft shadows removed; separation via a solid 2px ink ring. Type +1 step, body weight 500. Progress bars 12px with 2px border. Donut static, values labelled numerically. All motion &le; 1 frame / opacity-only.</span>
+      <span style="font-weight: 700;">Colour-blind safe</span>
+      <span style="color: #4A4460;">Independent toggle, combinable with the others. Swaps to the Okabe&ndash;Ito jar set; every jar shows its fixed pattern + icon + text label + numeric %. Donut gets segment dividers and a leader-line legend. Status uses glyphs. Targets: fill-vs-neighbour &ge; 3:1, text &ge; 4.5:1.</span>
+      <span style="font-weight: 700;">Dark</span>
+      <span style="color: #4A4460;">Follows <code>prefers-color-scheme</code> + toggle. Warm eggplant base (not slate). Stickers become raised dark surfaces with a hue left-edge and a hue-tinted icon chip &mdash; fills are not flooded. Jar hues lightened ~10% to stop them vibrating. Coach note = aged paper.</span>
+    </div>
+    <span style="display: block; margin-top: 14px; font-size: 11px; color: #6E6685; line-height: 1.5;">Baseline for every mode: touch targets &ge; 44px, visible 2px focus ring at 2px offset, WCAG AA text (AAA for balances and the coach note), honour <code>prefers-reduced-transparency</code> (drop gloss + tape).</span>
+  </div>
+
+  <!-- SCALE -->
+  <div class="card">
+    <p class="h">Scale, radius, motion</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 22px; font-size: 11.5px; color: #4A4460; line-height: 1.6;">
+      <span><strong>Space</strong><br>4 &middot; 8 &middot; 12 &middot; 16 &middot; 20 &middot; 24 &middot; 32</span>
+      <span><strong>Radius</strong><br>sticker 16 &middot; chip/pill 999 &middot; bubble 50% &middot; bar 999 &middot; note 4</span>
+      <span><strong>Elevation</strong><br>stickers: one soft-shadow token &middot; note: one hard-offset token</span>
+      <span><strong>Motion</strong><br>enter fade+scale .96&rarr;1, 220ms, 30ms stagger &middot; donut sweep 500ms &middot; press scale .97 / 120ms &middot; all off in Calm</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
