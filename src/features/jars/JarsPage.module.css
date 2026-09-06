@@ -1,0 +1,43 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  text-decoration: none;
+  color: inherit;
+}
+.row:hover {
+  text-decoration: none;
+}
+
+.chip {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.info {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--step-title);
+}
+.sub {
+  font-size: var(--step-caption);
+  opacity: 0.9;
+}
+.pct {
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

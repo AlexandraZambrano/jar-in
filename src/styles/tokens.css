@@ -1,0 +1,65 @@
+/* Design tokens — light + "Candy" defaults.
+   See docs/DESIGN-STICKER-SHEET.md §2, §6. Jar hues are data (src/features/jars/jarPalette.ts),
+   not tokens, because they are per-jar. */
+
+:root {
+  color-scheme: light;
+
+  /* roles */
+  --bg: #fff6e9;
+  --bg-dots: rgba(43, 36, 64, 0.07);
+  --surface: #ffffff;
+  --ink: #2b2440;
+  --ink-soft: #6e6685;
+  --accent: #e8384f;
+  --accent-ink: #ffffff;
+  --note-paper: #fbefc2;
+  --note-ink: #2b2440;
+  --hairline: rgba(43, 36, 64, 0.12);
+  --track: rgba(43, 36, 64, 0.14);
+  --danger: #c42a3f;
+  --ok: #1fa971;
+
+  /* sticker surface */
+  --sticker-border-color: #ffffff;
+  --sticker-border-width: 4px;
+  --sticker-ring: rgba(43, 36, 64, 0.12);
+  --sticker-ring-width: 1.5px;
+  --sticker-radius: 16px;
+  --shadow-sticker: 0 6px 14px rgba(43, 36, 64, 0.16);
+  --shadow-note: 4px 4px 0 rgba(43, 36, 64, 0.22);
+  --gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 42%);
+  --gloss-opacity: 1;
+
+  /* type */
+  --font-display: 'Fredoka', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-text: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Caveat', 'Bradley Hand', 'Segoe Print', cursive;
+  --step-display-xl: 34px;
+  --step-display-l: 24px;
+  --step-title: 15px;
+  --step-number: 15px;
+  --step-body: 13px;
+  --step-caption: 11px;
+  --lh-body: 1.5;
+
+  /* space / radius */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --r-pill: 999px;
+
+  /* motion */
+  --dur-enter: 220ms;
+  --dur-press: 120ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --tilt-unit: 0.5deg;
+  --motion-scale: 1;
+
+  /* accessibility flags (JS also reads these via getComputedStyle where useful) */
+  --cvd: 0;
+}

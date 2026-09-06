@@ -1,0 +1,22 @@
+.track {
+  height: var(--_h, 8px);
+  border-radius: var(--r-pill);
+  background: var(--_track, var(--track));
+  overflow: hidden;
+  border: var(--_border, 0) solid var(--sticker-ring);
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--_fill, var(--accent));
+  transition: width calc(var(--dur-enter) * var(--motion-scale)) var(--ease);
+}
+
+.over {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.55) 0 4px,
+    transparent 4px 9px
+  );
+}

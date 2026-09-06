@@ -1,0 +1,79 @@
+.note {
+  position: relative;
+  align-self: flex-start;
+  max-width: 320px;
+  margin: var(--s-2) 0 var(--s-5) var(--s-2);
+  padding: var(--s-3) var(--s-4) var(--s-3) 20px;
+  background: var(--note-paper);
+  color: var(--note-ink);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: var(--shadow-note);
+  transform: rotate(calc(var(--tilt-unit) * -3));
+  font-family: var(--font-hand);
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.spine {
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  bottom: -1px;
+  width: 5px;
+  background: var(--accent);
+  border: 1px solid var(--ink);
+  border-right: none;
+}
+
+.tape {
+  position: absolute;
+  top: -9px;
+  left: 40px;
+  width: 58px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(43, 36, 64, 0.25);
+  transform: rotate(3deg);
+  opacity: var(--gloss-opacity);
+}
+
+.label {
+  display: none;
+}
+
+/* Legible mode: drop the handwriting + tilt, keep the paper. */
+:global(html[data-a11y~='calm']) .note,
+:global(html[data-a11y~='cvd']) .note {
+  font-family: var(--font-text);
+  font-size: var(--step-body);
+  font-weight: 500;
+  transform: none;
+}
+:global(html[data-a11y~='calm']) .label,
+:global(html[data-a11y~='cvd']) .label {
+  display: block;
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note {
+    font-family: var(--font-text);
+    font-size: var(--step-body);
+    font-weight: 500;
+    transform: none;
+  }
+  .label {
+    display: block;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+}

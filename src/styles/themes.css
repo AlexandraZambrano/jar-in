@@ -1,0 +1,103 @@
+/* Theme + accessibility overrides. Layer order per docs/DESIGN-STICKER-SHEET.md §6:
+   :root  →  dark  →  calm / reduced-motion / contrast  →  cvd
+   Attributes on <html> always beat the OS media queries.
+
+   NOTE: a selector list cannot contain an @media, so each "attribute OR media"
+   pair is written as two rules with the same declarations. */
+
+/* ── Dark: explicit choice ── */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #17131f;
+  --bg-dots: rgba(255, 255, 255, 0.05);
+  --surface: #241d30;
+  --ink: #f3ecfa;
+  --ink-soft: #a99cc0;
+  --accent: #ff5c7a;
+  --accent-ink: #17131f;
+  --note-paper: #2e2a22;
+  --note-ink: #e9e0c8;
+  --hairline: rgba(255, 255, 255, 0.14);
+  --track: rgba(255, 255, 255, 0.08);
+  --sticker-border-color: transparent;
+  --sticker-border-width: 2px;
+  --sticker-ring: rgba(255, 255, 255, 0.14);
+  --shadow-sticker: 0 8px 18px rgba(0, 0, 0, 0.45);
+  --shadow-note: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  --gloss-opacity: 0.4;
+}
+
+/* ── Dark: follow the OS unless "light" was explicitly chosen ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #17131f;
+    --bg-dots: rgba(255, 255, 255, 0.05);
+    --surface: #241d30;
+    --ink: #f3ecfa;
+    --ink-soft: #a99cc0;
+    --accent: #ff5c7a;
+    --accent-ink: #17131f;
+    --note-paper: #2e2a22;
+    --note-ink: #e9e0c8;
+    --hairline: rgba(255, 255, 255, 0.14);
+    --track: rgba(255, 255, 255, 0.08);
+    --sticker-border-color: transparent;
+    --sticker-border-width: 2px;
+    --sticker-ring: rgba(255, 255, 255, 0.14);
+    --shadow-sticker: 0 8px 18px rgba(0, 0, 0, 0.45);
+    --shadow-note: 4px 4px 0 rgba(0, 0, 0, 0.5);
+    --gloss-opacity: 0.4;
+  }
+}
+
+/* ── Calm: explicit choice ── */
+:root[data-a11y~='calm'] {
+  --motion-scale: 0;
+  --dur-enter: 1ms;
+  --dur-press: 1ms;
+  --tilt-unit: 0deg;
+  --gloss-opacity: 0;
+  --bg-dots: transparent;
+  --shadow-sticker: none;
+  --sticker-ring: var(--ink);
+  --sticker-ring-width: 2px;
+  --step-body: 15px;
+  --step-caption: 12px;
+  --ink-soft: color-mix(in oklab, var(--ink) 74%, var(--bg));
+}
+
+/* ── Calm: follow the OS reduced-motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-a11y~='motion-ok']) {
+    --motion-scale: 0;
+    --dur-enter: 1ms;
+    --dur-press: 1ms;
+    --tilt-unit: 0deg;
+    --gloss-opacity: 0;
+    --bg-dots: transparent;
+    --shadow-sticker: none;
+    --sticker-ring: var(--ink);
+    --sticker-ring-width: 2px;
+    --step-body: 15px;
+    --step-caption: 12px;
+    --ink-soft: color-mix(in oklab, var(--ink) 74%, var(--bg));
+  }
+}
+
+/* ── Higher contrast ── */
+@media (prefers-contrast: more) {
+  :root:not([data-a11y~='motion-ok']) {
+    --shadow-sticker: none;
+    --sticker-ring: var(--ink);
+    --sticker-ring-width: 2px;
+    --ink-soft: color-mix(in oklab, var(--ink) 78%, var(--bg));
+  }
+}
+
+/* ── Colour-blind safe ──
+   The Okabe–Ito hue swap is done per-jar in JS (jarPalette.ts); this flag turns
+   the pattern layer on everywhere it is available. */
+:root[data-a11y~='cvd'] {
+  --cvd: 1;
+}
