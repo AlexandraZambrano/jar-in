@@ -97,8 +97,11 @@ export function JarEditPage() {
 
   async function onDelete() {
     if (!id || isNew) return;
-    if (!confirm('Delete this jar? Its transactions are kept and shown as unassigned.'))
-      return;
+    const txCount = await db.transactions.count({ selector: { jarId: id } }).exec();
+    const msg = txCount
+      ? `Delete this jar? Its ${txCount} transaction${txCount > 1 ? 's are' : ' is'} kept and shown as "Unassigned" until you move ${txCount > 1 ? 'them' : 'it'}.`
+      : 'Delete this jar?';
+    if (!confirm(msg)) return;
     await deleteJar(db, id);
     navigate('/jars');
   }

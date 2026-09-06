@@ -80,7 +80,7 @@ export function DashboardPage() {
 
       {inc.minor === 0 && (
         <p className="muted">
-          No income yet. <Link to="/settings">Add an income source</Link> to see your
+          No income yet. <Link to="/income/new">Add an income source</Link> to see your
           jars fill up.
         </p>
       )}
@@ -117,6 +117,10 @@ export function DashboardPage() {
           <JarCard key={c.jar.id} computed={c} cvd={cvd} locale={locale} tiltSeed={i + 1} />
         ))}
       </div>
+
+      <Link className="link-btn" to="/transactions" style={{ alignSelf: 'center' }}>
+        All transactions
+      </Link>
     </div>
   );
 }

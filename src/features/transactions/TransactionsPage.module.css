@@ -1,0 +1,79 @@
+.filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar {
+  display: none;
+}
+.filter {
+  flex: 0 0 auto;
+  font-size: var(--step-caption);
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+}
+.filter[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.dayHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--step-caption);
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 0 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+.icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+.rowMain {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.rowTitle {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rowSub {
+  font-size: var(--step-caption);
+  color: var(--ink-soft);
+}
+.amt {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--danger);
+}
+.reassign {
+  margin-top: 4px;
+}

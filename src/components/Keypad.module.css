@@ -1,0 +1,26 @@
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.key {
+  min-height: 56px;
+  border-radius: 14px;
+  border: 3px solid var(--sticker-border-color, #fff);
+  box-shadow:
+    var(--shadow-sticker),
+    0 0 0 var(--sticker-ring-width) var(--sticker-ring);
+  background-clip: padding-box;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-press) var(--ease);
+}
+.key:active {
+  transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+}

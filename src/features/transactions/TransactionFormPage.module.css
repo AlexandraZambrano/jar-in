@@ -1,0 +1,16 @@
+.amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding: var(--s-3) 0;
+}
+.amount .cur {
+  font-size: 22px;
+  color: var(--ink-soft);
+  margin-right: 6px;
+}
+.amount .zero {
+  color: var(--ink-soft);
+}

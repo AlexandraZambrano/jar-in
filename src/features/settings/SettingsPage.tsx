@@ -80,15 +80,25 @@ export function SettingsPage() {
       </Sticker>
 
       <Sticker tiltSeed={2} style={{ padding: 16 }}>
-        <div className="stack" style={{ gap: 6 }}>
-          <Link to="/jars" className="link-btn">
-            Manage jars
-          </Link>
-          <span className="muted" style={{ fontSize: 'var(--step-caption)' }}>
-            Wallets, income sources and transactions arrive in the next slices
-            (features 0003–0005).
-          </span>
-        </div>
+        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend className="eyebrow" style={{ marginBottom: 8 }}>
+            Manage
+          </legend>
+          <div className="stack" style={{ gap: 10 }}>
+            <Link to="/jars" className="link-btn">
+              Jars
+            </Link>
+            <Link to="/wallets" className="link-btn">
+              Wallets
+            </Link>
+            <Link to="/income" className="link-btn">
+              Income sources
+            </Link>
+            <Link to="/transactions" className="link-btn">
+              All transactions
+            </Link>
+          </div>
+        </fieldset>
       </Sticker>
     </div>
   );
