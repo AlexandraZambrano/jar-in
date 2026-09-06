@@ -1,6 +1,6 @@
 # 0003 — Wallets
 
-- **Status:** ⬜ not started
+- **Status:** ✅ done
 - **Phase:** 1
 - **Spec refs:** SPEC.md §3, §6
 - **Depends on:** 0001
@@ -46,4 +46,9 @@ Unit: currency validation, delete-guard logic. Hand-verified: CRUD.
 
 ## Changelog
 
-- _none yet_
+- **2026-09-06** — All criteria met. `WalletsPage` / `WalletEditPage` /
+  `walletsRepo` + shared `CurrencyPicker` (curated ISO-4217 list, keeps an
+  out-of-list code, locale default via `defaultCurrencyForLocale`).
+  Delete guard: `incomeSourcesUsingWallet()` pure helper; `deleteWallet`
+  throws a readable message and the editor surfaces it. Linked from
+  Settings and the income editor. Verified end-to-end (Playwright).

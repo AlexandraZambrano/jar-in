@@ -1,6 +1,6 @@
 # 0004 — Income sources
 
-- **Status:** ⬜ not started
+- **Status:** ✅ done
 - **Phase:** 1
 - **Spec refs:** SPEC.md §7
 - **Depends on:** 0001, 0003
@@ -54,4 +54,11 @@ Hand-verified: live dashboard recompute.
 
 ## Changelog
 
-- _none yet_
+- **2026-09-06** — All criteria met. `IncomePage` / `IncomeEditPage` /
+  `incomeRepo`. Inline active toggle on the list; dashboard + jar planned
+  amounts recompute live via RxDB. `once` sources are excluded from the
+  monthly figure with a note. Every mutation calls `emitReprojection()`
+  (`src/lib/reprojection.ts`) with a reason — the seam feature 0009 /
+  Phase 3 subscribe to; v1 just logs in dev. Mixed-currency income is
+  summed naively with a notice (per ADR 0004), FX conversion is Phase 2.
+  Verified end-to-end (Playwright): adding income moves the monthly chip.

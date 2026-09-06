@@ -38,10 +38,13 @@ Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · visual design:
 ## Where it's at
 
 **Phase 1 (core ledger, single user) — in progress.** Working today:
-on-device database, the default jar template, jar create/edit, the
-dashboard with a live allocation donut and computed progress, and the
-theme / accessibility modes. Next: wallets, income sources, and
-transaction entry. Track it in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+on-device database, the default jar template with create/edit, wallets,
+multiple income sources, a keypad transaction-entry flow with a grouped
+history, and a dashboard whose allocation donut and per-jar progress are
+computed live from real data — plus the theme / accessibility modes.
+Next: sub-category editing, accumulation-jar goals + withdrawals, and
+deterministic projections. Track it in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Screens
 
@@ -59,6 +62,14 @@ compose — dark + colour-blind-safe + calm is a valid combination):
 | Jars | Jar editor |
 |---|---|
 | ![Jars list](docs/screenshots/jars-light.png) | ![Jar editor](docs/screenshots/jar-edit-light.png) |
+
+| Add a transaction | Transactions | Dashboard with spending |
+|---|---|---|
+| ![Add transaction](docs/screenshots/add-transaction.png) | ![Transactions list](docs/screenshots/transactions.png) | ![Dashboard with real transactions](docs/screenshots/dashboard-active.png) |
+
+| Wallets | Income sources |
+|---|---|
+| ![Wallets](docs/screenshots/wallets.png) | ![Income sources](docs/screenshots/income.png) |
 
 _Screenshots are regenerated with `npm run shots` (Playwright) as
 features land._

@@ -1,6 +1,6 @@
 # 0005 — Transactions (manual entry + list)
 
-- **Status:** ⬜ not started
+- **Status:** ✅ done
 - **Phase:** 1
 - **Spec refs:** SPEC.md §4, §9
 - **Depends on:** 0001, 0002
@@ -34,8 +34,11 @@ review/edit/delete past transactions. This is what makes the dashboard's
 4. Editing / deleting updates the list and the dashboard live.
 5. Reassign flow: a transaction whose `jarId` points at a soft-deleted
    jar renders as "Unassigned" with a "Move to…" action.
-6. `externalTransactionId` uniqueness is enforced by the schema index
-   (guards the future bank-sync import) even though v1 never sets it.
+6. `externalTransactionId` / `externalAccountId` exist on the schema and
+   are always `null` in v1. RxDB has no unique constraint beyond the
+   primary key, so import-time dedupe (feature 0008) — not a DB index —
+   guards the future bank sync. The fields are reserved so bank sync
+   lands without a migration.
 
 ## Data touched
 
@@ -58,4 +61,15 @@ Hand-verified: keypad entry, live dashboard update.
 
 ## Changelog
 
-- _none yet_
+- **2026-09-06** — All criteria met. `/add` + `/transactions/:id` share
+  `TransactionFormPage` (keypad + `JarSelect` chips + date + jar
+  sub-category + note); no fake OS chrome. `/transactions` groups
+  newest-day-first with per-day totals and jar filter chips
+  (`transactions/compute.ts`, unit-tested). Orphaned transactions (jar
+  soft-deleted) render as "Unassigned" with an inline "Move to…" that
+  calls `reassignTransaction`. Transactions inherit the jar's currency in
+  v1. Adding a transaction moves the dashboard's computed "spent" and the
+  donut's outer ring immediately (verified end-to-end with Playwright:
+  three entries → Essentials €225 / €1,200, Joy-jar €62 / €240).
+- **2026-09-06** — Also completed feature 0002 criterion 6: the jar-delete
+  confirm now names how many transactions will become "Unassigned".
