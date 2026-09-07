@@ -146,7 +146,8 @@ export function JarDetailPage() {
               </span>
             </div>
             <div className={styles.bigSub}>
-              spent this month{c.over ? ' · over cap' : ''}
+              {Math.round(c.ratio * 100)}% of cap · {money(c.plannedMinor)}/mo
+              {c.over ? ' · over cap' : ''}
             </div>
           </div>
           <ProgressBar

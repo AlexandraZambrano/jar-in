@@ -42,7 +42,7 @@ erDiagram
         number percentage "0..100"
         string visibility "personal | shared"
         int targetAmountMinor "accumulation only, nullable"
-        int openingBalanceMinor "accumulation only, default 0"
+        int openingBalanceMinor "any jar type, default 0"
         string startedAt "ISO date, default createdAt"
         string color "hex"
         string pattern "solid|hatch|dots|hline|grid|vline"

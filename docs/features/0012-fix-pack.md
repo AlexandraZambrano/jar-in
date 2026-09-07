@@ -41,8 +41,8 @@ target). It should also state what goes in each month.
 
 **Fix:** the line becomes `Growth · €X of €Y · +€Z/mo`, where
 `€Z = jarPlannedMinor(jar, monthlyIncome)` (already computed). Same
-figure appears on the jar detail headline sub-line. Flow cards keep
-`Flow · €X of €Y spent`.
+figure appears on the jar detail headline sub-line. Flow cards get a
+parallel 3-segment line — see the 2026-09-07 follow-up (12f).
 
 **Acceptance:** every growth jar on Home and on its detail shows the
 `+€Z/mo` figure; it updates when income or the jar % changes.
@@ -156,3 +156,21 @@ headline is unchanged; DATA-MODEL.md compute notes updated.
     are **not** back-dated in the seed, so a fresh flow jar shows the
     "fills in as months pass" empty state until it has history.
   - 60 unit tests green.
+- **2026-09-07 (follow-up)** — two issues from a second pass:
+  - **12e correction.** 12e only fixed `JarEditPage.onSubmit`; the repo
+    still discarded the value. `jarsRepo.createJar` hard-set
+    `openingBalanceMinor: 0` for non-accumulation jars and
+    `updateJar`'s `else` branch reset it to `0` on every save, so a
+    flow jar's opening balance never persisted. Now both persist
+    `openingBalanceMinor` regardless of type; only `targetAmountMinor`
+    stays accumulation-gated. Verified end-to-end: set €200 on a flow
+    jar, save, reload editor → field shows €200.
+  - **12f — flow Home/detail line matches growth.** `JarCard` flow line
+    was `Flow · €X of €Y spent` (2 segments) vs growth's 3-segment
+    `Growth · €X of €Y · €Z/mo`. Flow line is now
+    `Flow · €X of €Y · €Z left` (or `· €Z over` past the cap) — same
+    `·`-separated 3-segment shape. `JarDetailPage` flow sub-line
+    likewise moves from `spent this month` to
+    `N% of cap · €Y/mo[ · over cap]`, mirroring growth's
+    `N% to goal · +€Z/mo`.
+  - 79 unit tests green.

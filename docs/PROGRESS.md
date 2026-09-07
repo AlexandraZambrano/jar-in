@@ -5,6 +5,35 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — 0012 follow-up: flow-jar opening balance + consistent info line
+
+Two issues from a second pass over the shipped fix pack.
+
+**Fixed**
+
+- **Flow-jar opening balance never persisted.** 0012e fixed only
+  `JarEditPage.onSubmit`; `jarsRepo` still discarded the value —
+  `createJar` hard-set `openingBalanceMinor: 0` for non-accumulation
+  jars and `updateJar`'s `else` branch reset it on every save. Both now
+  persist `openingBalanceMinor` for any jar type; only
+  `targetAmountMinor` stays accumulation-gated.
+- **Flow Home card / detail line now matches growth.** `JarCard` flow
+  line went from `Flow · €X of €Y spent` (2 segments) to
+  `Flow · €X of €Y · €Z left` / `· €Z over` — the same 3-segment
+  `·`-separated shape as `Growth · €X of €Y · €Z/mo`. `JarDetailPage`
+  flow sub-line moves from `spent this month` to
+  `N% of cap · €Y/mo[ · over cap]`, mirroring growth's
+  `N% to goal · +€Z/mo`.
+
+**Verified**
+
+- `npm run check` green — 79 unit tests.
+- Browser (`npm run dev`): set a €200 opening balance on the Essentials
+  flow jar, saved, reopened the editor → field shows €200. Home shows
+  `Flow · €450.00 of €932.80 · €482.80 left` for every flow jar.
+
+**Next:** CI pipeline from `docs/DEPLOYMENT.md`.
+
 ## 2026-09-07 — Feature 0011: first-run onboarding & app tour
 
 **Added**

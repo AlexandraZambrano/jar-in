@@ -27,7 +27,7 @@ export async function createJar(db: JarInDatabase, input: JarInput): Promise<str
     percentage: input.percentage,
     visibility: 'personal',
     targetAmountMinor: input.type === 'accumulation' ? input.targetAmountMinor : null,
-    openingBalanceMinor: input.type === 'accumulation' ? input.openingBalanceMinor : 0,
+    openingBalanceMinor: input.openingBalanceMinor,
     startedAt: todayISO(),
     currency: input.currency,
     color: input.color,
@@ -57,13 +57,14 @@ export async function updateJar(
   if (patch.icon !== undefined) next.icon = patch.icon;
   if (patch.currency !== undefined) next.currency = patch.currency;
   const type = patch.type ?? doc.get('type');
+  // Opening balance is meaningful for every jar type — a flow jar tracks a
+  // running balance too — so persist it regardless of type.
+  if (patch.openingBalanceMinor !== undefined)
+    next.openingBalanceMinor = patch.openingBalanceMinor;
   if (type === 'accumulation') {
     if (patch.targetAmountMinor !== undefined) next.targetAmountMinor = patch.targetAmountMinor;
-    if (patch.openingBalanceMinor !== undefined)
-      next.openingBalanceMinor = patch.openingBalanceMinor;
   } else {
     next.targetAmountMinor = null;
-    next.openingBalanceMinor = 0;
   }
   await doc.patch(next);
 }

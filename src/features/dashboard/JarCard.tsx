@@ -22,9 +22,12 @@ export function JarCard({ computed, cvd, calm, patterns, locale, tiltSeed }: Pro
   const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
 
   const money = (m: number) => formatMoney(m, jar.currency, locale);
+  const flowTail = over
+    ? `${money(actualMinor - plannedMinor)} over`
+    : `${money(Math.max(0, plannedMinor - actualMinor))} left`;
   const line =
     jar.type === 'flow'
-      ? `Flow · ${money(actualMinor)} of ${money(plannedMinor)} spent`
+      ? `Flow · ${money(actualMinor)} of ${money(plannedMinor)} · ${flowTail}`
       : `Growth · ${money(actualMinor)} of ${money(targetMinor ?? 0)} · ${money(plannedMinor)}/mo`;
 
   return (
