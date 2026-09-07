@@ -5,6 +5,37 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0008: CSV import
+
+**Added**
+
+- `csvParse.ts` — hand-rolled CSV parser (quoted fields, `""` escapes,
+  embedded newlines, CRLF, BOM), `sniffDelimiter` (`, ; \t`),
+  `parseCsvDate` (ISO / dmy / mdy / dotted / 2-digit year),
+  `extractRows` (sign convention → expense/income split, malformed
+  collection), `hashRow` (djb2), `guessMapping`.
+- `importDedupe.ts` — session `Set` of imported hashes.
+- 3-step wizard `ImportCsvPage` (`/transactions/import`, linked from the
+  transactions header) + `ColumnMap` + `ImportPreview` components.
+- `transactionsRepo.importCsvTransactions` — bulk insert with
+  `sourceType: "csv_import"`.
+
+**Verified**
+
+- `npm run check` green — 56 unit tests (csvParse ×11, importDedupe ×2).
+- End-to-end (Playwright): a `;`-delimited EU-decimal bank-style file →
+  auto-detected delimiter + columns, preview shows "4 to import · 1 look
+  like income, skipped · 1 unreadable", import writes 4 rows (Salary
+  excluded), re-import in the same session → "0 to import · 4 already
+  imported", button disabled, no duplicate rows in the list.
+  Screenshots added (`import-csv-map`, `import-csv-preview`).
+
+**Next**
+
+- 0010 PWA polish (icons, install prompt, offline UX, iOS nudge) → Phase 1 done.
+
+---
+
 ## 2026-09-07 — Feature 0009: deterministic projections
 
 **Added**

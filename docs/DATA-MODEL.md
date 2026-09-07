@@ -171,6 +171,11 @@ the change in this file's history below and in `PROGRESS.md`.
 - Deleting a `subCategories` row patches `subCategoryId` to `null` on any
   `transactions` that referenced it (they report at jar level instead).
   Sub-category `order` is kept contiguous (0..n) by the reorder repo.
+- CSV import writes `transactions.sourceType = "csv_import"` and leaves
+  `externalAccountId` / `externalTransactionId` null. Re-import dedupe is
+  **session-only** (an in-memory hash set of
+  `date|amountMinor|normalised-note`), not a DB constraint — durable
+  dedupe is bank sync's job via `externalTransactionId`.
 - Dev builds wrap the Dexie storage in `wrappedValidateAjvStorage`
   (RxDB dev-mode requires a top-level validator).
 

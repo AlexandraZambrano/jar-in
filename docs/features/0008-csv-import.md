@@ -1,6 +1,6 @@
 # 0008 — CSV import of transactions
 
-- **Status:** ⬜ not started
+- **Status:** ✅ done
 - **Phase:** 1
 - **Spec refs:** SPEC.md §9, §13
 - **Depends on:** 0002, 0005
@@ -30,8 +30,11 @@ override), preview, import.
 
 ## Screens / components
 
-`features/transactions/ImportCsvPage.tsx`, `csvParse.ts`,
-`ColumnMap.tsx`, `ImportPreview.tsx`.
+`features/transactions/ImportCsvPage.tsx` (route `/transactions/import`,
+linked from the transactions header), `ColumnMap.tsx`,
+`ImportPreview.tsx`, `csvParse.ts` (parser + `extractRows` + `hashRow` +
+`guessMapping`), `importDedupe.ts` (session hash set),
+`transactionsRepo.importCsvTransactions`.
 
 ## Out of scope
 
@@ -45,4 +48,26 @@ validation. Hand-verified: full mapping → preview → import.
 
 ## Changelog
 
-- _none yet_
+- **2026-09-07** — All criteria met.
+  - `parseCsv` — hand-rolled RFC-4180-ish parser (quoted fields, `""`
+    escapes, embedded newlines, CRLF, BOM). `sniffDelimiter` picks
+    `, ; \t` from the header line; the user can override.
+  - 3-step wizard: **File** (client-side `FileReader`, nothing uploaded)
+    → **Columns** (`guessMapping` auto-fills date / amount / note from
+    header names; delimiter, date-order `dmy/mdy/ymd` auto-guessed;
+    expense-sign toggle; sample rows shown) → **Preview** (`extractRows`
+    → table with a default jar + per-row jar override).
+  - Import bulk-inserts with `sourceType: "csv_import"`,
+    `external*` left null.
+  - Session dedupe: rows hashed on `date|amountMinor|normalised-note`
+    (`hashRow`), kept in a module `Set` (`importDedupe.ts`). Re-selecting
+    the same file in the same session shows every row as "already
+    imported" and disables the button. Not persisted — durable dedupe is
+    real bank sync's job via `externalTransactionId`.
+  - Malformed rows are listed with a reason and skipped; rows on the
+    non-expense side of the sign convention are counted as "look like
+    income, skipped" — neither is silently dropped.
+  - 56 unit tests (`csvParse` ×11, `importDedupe` ×2). Verified
+    end-to-end (Playwright): a `;`-delimited EU-decimal file → 4
+    imported, 1 income skipped, 1 unreadable listed; re-import in-session
+    → 0 importable.

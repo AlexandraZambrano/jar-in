@@ -107,6 +107,33 @@ for (const s of MODES) {
   await page.screenshot({ path: `${OUT}/jar-detail-withdrawal.png` });
   console.log('  ✓ jar-detail-withdrawal');
 
+  // CSV import wizard: column-mapping + preview steps
+  {
+    const csv = [
+      'Booking Date;Description;Amount',
+      '01/06/2026;Tesco groceries;-42,10',
+      '03/06/2026;Coffee shop;-3,80',
+      '05/06/2026;Salary June;1500,00',
+      '07/06/2026;Cinema tickets;-19,00',
+      'not-a-date;Broken row;-9,99',
+      '10/06/2026;Pharmacy;-8,50',
+    ].join('\n');
+    await page.goto(`${BASE}/transactions/import`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(500);
+    await page.setInputFiles('input[type=file]', {
+      name: 'june.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv),
+    });
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: `${OUT}/import-csv-map.png` });
+    console.log('  ✓ import-csv-map');
+    await page.getByRole('button', { name: 'Preview', exact: true }).click();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: `${OUT}/import-csv-preview.png` });
+    console.log('  ✓ import-csv-preview');
+  }
+
   for (const [name, path] of [
     ['dashboard-active', '/'],
     ['transactions', '/transactions'],

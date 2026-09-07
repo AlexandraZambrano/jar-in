@@ -1,0 +1,89 @@
+.steps {
+  display: flex;
+  gap: 6px;
+  font-size: var(--step-caption);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.steps .on {
+  color: var(--ink);
+}
+
+.drop {
+  border: 2px dashed var(--ink);
+  border-radius: 14px;
+  padding: 24px 16px;
+  text-align: center;
+  background: var(--surface);
+}
+.drop input {
+  display: block;
+  margin: 10px auto 0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+table.grid {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--step-caption);
+}
+.grid th,
+.grid td {
+  text-align: left;
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+.grid th {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.grid tr:last-child td {
+  border-bottom: none;
+}
+.grid td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.grid select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  padding: 3px 6px;
+}
+.grid tr.dupe td {
+  opacity: 0.45;
+}
+
+.bad {
+  font-size: var(--step-caption);
+  color: var(--danger);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.seg {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.seg button {
+  font-size: var(--step-caption);
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: var(--r-pill);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+}
+.seg button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--bg);
+}

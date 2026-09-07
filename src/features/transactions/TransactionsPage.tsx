@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
@@ -36,7 +36,12 @@ export function TransactionsPage() {
 
   return (
     <div className="screen">
-      <h1 className="screen-title">Transactions</h1>
+      <div className="screen-head">
+        <h1 className="screen-title">Transactions</h1>
+        <Link className="link-btn" to="/transactions/import">
+          Import CSV
+        </Link>
+      </div>
 
       <div className={styles.filters}>
         <button

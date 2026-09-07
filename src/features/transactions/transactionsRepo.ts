@@ -57,6 +57,41 @@ export async function deleteTransaction(db: JarInDatabase, id: string): Promise<
   await doc?.remove();
 }
 
+export interface CsvImportRow {
+  jarId: string;
+  subCategoryId: string | null;
+  amountMinor: number;
+  currency: string;
+  date: string; // YYYY-MM-DD
+  note: string;
+}
+
+/** Bulk-insert rows from a CSV import (sourceType 'csv_import'). Returns the count. */
+export async function importCsvTransactions(
+  db: JarInDatabase,
+  rows: CsvImportRow[],
+): Promise<number> {
+  if (!rows.length) return 0;
+  const ts = nowISO();
+  await db.transactions.bulkInsert(
+    rows.map((r) => ({
+      id: newId(),
+      jarId: r.jarId,
+      subCategoryId: r.subCategoryId,
+      amountMinor: r.amountMinor,
+      currency: r.currency,
+      date: r.date,
+      note: r.note.trim(),
+      sourceType: 'csv_import' as const,
+      externalAccountId: null,
+      externalTransactionId: null,
+      createdAt: ts,
+      updatedAt: ts,
+    })),
+  );
+  return rows.length;
+}
+
 /** Point an orphaned transaction at a live jar. */
 export async function reassignTransaction(
   db: JarInDatabase,
