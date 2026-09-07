@@ -41,24 +41,28 @@ const MODES = [
   { name: 'dashboard-cvd', path: '/', pref: { theme: 'light', a11y: ['cvd'] } },
   { name: 'dashboard-calm', path: '/', pref: { theme: 'light', a11y: ['calm'] } },
   { name: 'jars-light', path: '/jars', pref: { theme: 'light', a11y: [] } },
-  {
-    name: 'jar-edit-light',
-    path: '/jars',
-    open: 'Essentials', // click into a seeded jar so the sub-category editor is populated
-    pref: { theme: 'light', a11y: [] },
-  },
+  // click into a seeded jar (→ detail), screenshot there
+  { name: 'jar-detail-flow', open: 'Essentials', pref: { theme: 'light', a11y: [] } },
+  { name: 'jar-detail-accumulation', open: 'Safe fund', pref: { theme: 'light', a11y: [] } },
+  // from the jar detail, follow Edit → the editor (sub-category section is populated)
+  { name: 'jar-edit-light', open: 'Essentials', thenEdit: true, pref: { theme: 'light', a11y: [] } },
   { name: 'settings-light', path: '/settings', pref: { theme: 'light', a11y: [] } },
 ];
 
 for (const s of MODES) {
   const ctx = await browser.newContext(ctxOpts(s.pref));
   const page = await ctx.newPage();
-  await page.goto(BASE + s.path, { waitUntil: 'networkidle' });
+  await page.goto(BASE + (s.path ?? '/jars'), { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
   if (s.open) {
     await page.getByRole('link', { name: new RegExp(s.open) }).click();
     await page.waitForURL(/\/jars\/[^/]+$/);
     await page.waitForTimeout(600);
+    if (s.thenEdit) {
+      await page.getByRole('link', { name: 'Edit' }).click();
+      await page.waitForURL(/\/jars\/[^/]+\/edit$/);
+      await page.waitForTimeout(500);
+    }
   }
   await page.screenshot({ path: `${OUT}/${s.name}.png` });
   console.log('  ✓', s.name);
@@ -87,6 +91,20 @@ for (const s of MODES) {
     await page.goto(`${BASE}/add`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(400);
   }
+
+  // record a withdrawal on Safe fund so its detail shows a marker + list
+  await page.goto(`${BASE}/jars`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
+  await page.getByRole('link', { name: /Safe fund/ }).click();
+  await page.waitForURL(/\/jars\/[^/]+$/);
+  await page.waitForTimeout(400);
+  await page.getByRole('button', { name: /Withdraw from this jar/ }).click();
+  await page.getByLabel(/Amount/).fill('300');
+  await page.getByLabel('Reason (optional)').fill('Car repair');
+  await page.getByRole('button', { name: 'Record withdrawal' }).click();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${OUT}/jar-detail-withdrawal.png` });
+  console.log('  ✓ jar-detail-withdrawal');
 
   for (const [name, path] of [
     ['dashboard-active', '/'],

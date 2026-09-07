@@ -42,8 +42,9 @@ on-device database, the full jar editor (name, %, type, colour, icon,
 pattern, sub-categories), wallets, multiple income sources, a keypad
 transaction-entry flow with a grouped history, and a dashboard whose
 allocation donut and per-jar progress are computed live from real data —
-plus the theme / accessibility modes. Next: accumulation-jar goals +
-withdrawal events, and deterministic projections. Track it in
+accumulation-jar goals with a balance-over-time chart and withdrawal
+events, plus the theme / accessibility modes. Next: deterministic
+projections, CSV import, PWA polish. Track it in
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Screens
@@ -66,6 +67,10 @@ compose — dark + colour-blind-safe + calm is a valid combination):
 | Add a transaction | Transactions | Dashboard with spending |
 |---|---|---|
 | ![Add transaction](docs/screenshots/add-transaction.png) | ![Transactions list](docs/screenshots/transactions.png) | ![Dashboard with real transactions](docs/screenshots/dashboard-active.png) |
+
+| Accumulation jar + timeline | After a withdrawal |
+|---|---|
+| ![Accumulation jar detail](docs/screenshots/jar-detail-accumulation.png) | ![Jar detail with a withdrawal](docs/screenshots/jar-detail-withdrawal.png) |
 
 | Wallets | Income sources |
 |---|---|

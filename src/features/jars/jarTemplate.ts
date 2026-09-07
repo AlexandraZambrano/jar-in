@@ -10,6 +10,10 @@ export interface JarTemplateEntry {
   icon: string;
   /** Major units; converted to minor on seed. Accumulation jars only. */
   targetMajor?: number;
+  /** Seed-only: opening balance in major units (accumulation jars). */
+  openingMajor?: number;
+  /** Seed-only: back-date `startedAt` this many months so the demo shows progress. */
+  startedMonthsAgo?: number;
   subCategories?: string[];
 }
 
@@ -34,6 +38,8 @@ export const DEFAULT_JAR_TEMPLATE: JarTemplateEntry[] = [
     pattern: 'hatch',
     icon: 'sprout',
     targetMajor: 10000,
+    openingMajor: 1200,
+    startedMonthsAgo: 5,
   },
   {
     key: 'safe',
@@ -44,6 +50,8 @@ export const DEFAULT_JAR_TEMPLATE: JarTemplateEntry[] = [
     pattern: 'dots',
     icon: 'shield',
     targetMajor: 5000,
+    openingMajor: 800,
+    startedMonthsAgo: 5,
   },
   {
     key: 'joy',

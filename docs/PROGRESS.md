@@ -5,6 +5,44 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0007: accumulation jars & withdrawal events
+
+**Added**
+
+- **Jar detail page** (`JarDetailPage`) at `/jars/:id`; the editor moved
+  to `/jars/:id/edit`. Jar-list rows and dashboard jar cards now open
+  detail.
+  - Accumulation: balance / target headline, % to goal, goal-reached
+    flag, `BalanceTimeline` SVG (accrual line + dashed target line + red
+    withdrawal markers with tooltips), an inline withdraw form, and a
+    deletable withdrawals list.
+  - Flow: spent / cap headline + progress + "This month" transactions;
+    no withdraw action.
+- `timeline.ts` — pure `buildBalanceTimeline` (contributions accrue at
+  whole-month boundaries, withdrawals subtract on their date, 0-clamped;
+  final point matches `accumulationBalanceMinor`). `withdrawalsRepo`
+  (create/delete → `emitReprojection('withdrawal')`). `addMonths` added
+  to `lib/date.ts`.
+- Seed: accumulation jars back-dated 5 months with opening balances
+  (`jarTemplate.ts` `openingMajor` / `startedMonthsAgo`) so the demo
+  shows real progress.
+
+**Verified**
+
+- `npm run check` green — 28 unit tests (timeline builder ×4, addMonths).
+- End-to-end (Playwright): Safe fund → €2,600 / €5,000 (52%); record
+  €300 "Car repair" → €2,300 (46%) with a chart marker; persists across
+  reload; Essentials detail has no withdraw button. Screenshots refreshed
+  (jar-detail-flow / -accumulation / -withdrawal; jar-edit now via the
+  Edit link).
+
+**Next**
+
+- 0009 projections (EMA / regression → goal date; consumes the
+  reprojection hook), 0008 CSV import, 0010 PWA polish.
+
+---
+
 ## 2026-09-07 — Feature 0002 completed: sub-category editor
 
 **Added**

@@ -1,0 +1,47 @@
+.wrap {
+  width: 100%;
+}
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.area {
+  fill: currentColor;
+  opacity: 0.14;
+}
+.target {
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  fill: none;
+}
+.targetLabel {
+  fill: var(--ink-soft);
+  font-size: 9px;
+  font-family: var(--font-text);
+}
+.wdot {
+  fill: var(--bg);
+  stroke: var(--danger);
+  stroke-width: 2.5;
+}
+.axisLabel {
+  fill: var(--ink-soft);
+  font-size: 9px;
+  font-family: var(--font-text);
+}
+.empty {
+  font-size: var(--step-caption);
+  color: var(--ink-soft);
+  padding: var(--s-4) 0;
+  text-align: center;
+}

@@ -3,6 +3,7 @@ import { AppShell } from './AppShell';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { JarsPage } from '@/features/jars/JarsPage';
 import { JarEditPage } from '@/features/jars/JarEditPage';
+import { JarDetailPage } from '@/features/jars/JarDetailPage';
 import { WalletsPage } from '@/features/wallets/WalletsPage';
 import { WalletEditPage } from '@/features/wallets/WalletEditPage';
 import { IncomePage } from '@/features/income/IncomePage';
@@ -20,7 +21,8 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'jars', element: <JarsPage /> },
       { path: 'jars/new', element: <JarEditPage /> },
-      { path: 'jars/:id', element: <JarEditPage /> },
+      { path: 'jars/:id', element: <JarDetailPage /> },
+      { path: 'jars/:id/edit', element: <JarEditPage /> },
       { path: 'wallets', element: <WalletsPage /> },
       { path: 'wallets/new', element: <WalletEditPage /> },
       { path: 'wallets/:id', element: <WalletEditPage /> },

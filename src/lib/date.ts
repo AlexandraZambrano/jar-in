@@ -30,3 +30,15 @@ export function wholeMonthsBetween(startISO: string, endISO: string): number {
 export function monthLabel(iso: string = nowISO(), locale?: string): string {
   return new Date(iso).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
+
+/** Add `n` whole months to an ISO date, returning a "YYYY-MM-DD" string.
+ *  Day-of-month is clamped to the target month's length (Jan 31 + 1mo -> Feb 28). */
+export function addMonths(iso: string, n: number): string {
+  const d = new Date(iso.slice(0, 10) + 'T00:00:00Z');
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + n);
+  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, lastDay));
+  return d.toISOString().slice(0, 10);
+}

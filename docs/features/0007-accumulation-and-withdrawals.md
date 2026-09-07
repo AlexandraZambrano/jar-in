@@ -1,6 +1,6 @@
 # 0007 — Accumulation jars: target, progress, withdrawals
 
-- **Status:** ⬜ not started
+- **Status:** ✅ done
 - **Phase:** 1
 - **Spec refs:** SPEC.md §4
 - **Depends on:** 0002, 0006
@@ -39,8 +39,10 @@ chart, and triggers an immediate re-projection.
 
 ## Screens / components
 
-`features/jars/JarDetailPage.tsx`, `BalanceTimeline.tsx`,
-`WithdrawSheet.tsx`.
+`features/jars/JarDetailPage.tsx` (routes: `/jars/:id` detail,
+`/jars/:id/edit` editor), `BalanceTimeline.tsx` (inline SVG),
+`timeline.ts` (pure series builder), `withdrawalsRepo.ts`. The withdraw
+form is inline on the detail page rather than a separate sheet.
 
 ## Out of scope
 
@@ -54,4 +56,23 @@ builder. Hand-verified: withdraw flow + re-projection hook.
 
 ## Changelog
 
-- _none yet_
+- **2026-09-07** — All criteria met.
+  - **Routing changed:** `/jars/:id` is now the **detail** page;
+    `/jars/:id/edit` is the editor. Jar list rows and dashboard jar cards
+    go to detail.
+  - Accumulation detail: balance / target headline, % to goal,
+    goal-reached flag, a `BalanceTimeline` SVG (contribution accrual line
+    + dashed target + red withdrawal markers with `<title>` tooltips),
+    an inline withdraw form, and a deletable withdrawals list.
+  - Flow detail (criterion 5): spent / cap headline + progress + a
+    "This month" transaction list; no withdraw action.
+  - `withdrawalsRepo` create/delete each call `emitReprojection('withdrawal')`.
+  - `timeline.ts` (`buildBalanceTimeline`) is pure and unit-tested (4
+    cases incl. "final point == `accumulationBalanceMinor`" and 0-clamp);
+    `addMonths` added to `lib/date.ts` with tests.
+  - Seed change: the two accumulation jars are back-dated 5 months with
+    opening balances so the demo shows real progress (see
+    `jarTemplate.ts` `openingMajor` / `startedMonthsAgo`).
+  - Verified end-to-end (Playwright): open Safe fund → €2,600 / €5,000,
+    52%; record €300 "Car repair" → €2,300, 46%, marker on chart,
+    persists across reload; Essentials detail has no withdraw button.

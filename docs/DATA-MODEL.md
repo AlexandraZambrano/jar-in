@@ -139,6 +139,10 @@ derived on read:
 - **Accumulation jar — balance** =
   `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
    − Σ withdrawalEvents`, clamped ≥ 0. Progress = `balance / targetAmountMinor`.
+  The jar-detail chart (`jars/timeline.ts`) expands this into a point
+  series — contributions accrue at each whole-month boundary from
+  `startedAt`, withdrawals subtract on their date — and its final point
+  equals the balance above.
 - **Plan health** = `Σ jar.percentage`. `= 100` balanced; `≠ 100`
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
 

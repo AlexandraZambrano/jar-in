@@ -1,6 +1,6 @@
 import type { JarInDatabase } from './database';
 import { newId } from '@/lib/id';
-import { nowISO, todayISO } from '@/lib/date';
+import { addMonths, nowISO, todayISO } from '@/lib/date';
 import { toMinor } from '@/lib/money';
 import { DEFAULT_JAR_TEMPLATE } from '@/features/jars/jarTemplate';
 
@@ -44,8 +44,11 @@ export async function seedIfEmpty(db: JarInDatabase): Promise<void> {
     visibility: 'personal' as const,
     targetAmountMinor:
       t.targetMajor != null ? toMinor(t.targetMajor, DEFAULT_CURRENCY) : null,
-    openingBalanceMinor: 0,
-    startedAt: todayISO(),
+    openingBalanceMinor:
+      t.openingMajor != null ? toMinor(t.openingMajor, DEFAULT_CURRENCY) : 0,
+    startedAt: t.startedMonthsAgo
+      ? addMonths(todayISO(), -t.startedMonthsAgo)
+      : todayISO(),
     currency: DEFAULT_CURRENCY,
     color: t.color,
     pattern: t.pattern,

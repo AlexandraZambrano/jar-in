@@ -23,7 +23,7 @@ offline, on-device.
 | 0004 | Income sources — multiple, editable, drive jar funding | [features/0004-income-sources.md](features/0004-income-sources.md) | ✅ |
 | 0005 | Transactions — manual entry + list, tagged to jar/sub-category | [features/0005-transactions.md](features/0005-transactions.md) | ✅ |
 | 0006 | Dashboard — allocation donut, jar cards, computed coach note | [features/0006-dashboard.md](features/0006-dashboard.md) | ✅ |
-| 0007 | Accumulation jars — target, progress, withdrawal events | [features/0007-accumulation-and-withdrawals.md](features/0007-accumulation-and-withdrawals.md) | ⬜ |
+| 0007 | Accumulation jars — target, progress, withdrawal events | [features/0007-accumulation-and-withdrawals.md](features/0007-accumulation-and-withdrawals.md) | ✅ |
 | 0008 | CSV import of transactions | [features/0008-csv-import.md](features/0008-csv-import.md) | ⬜ |
 | 0009 | Deterministic projections (goal date for accumulation jars) | [features/0009-projections.md](features/0009-projections.md) | ⬜ |
 | 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ⬜ |
@@ -58,3 +58,4 @@ offline, on-device.
 - **2026-09-06** — First slice landed and verified (`npm run check` green, browser-checked, screenshots captured). **0001 ✅**, **0006 ✅**, 0002 🟡 (sub-category editor + delete-guard still to do). README + `npm run shots` added.
 - **2026-09-06** — **0003 ✅ wallets**, **0004 ✅ income sources**, **0005 ✅ transactions** (keypad add flow + grouped list + jar filter + Unassigned/reassign). Shared `CurrencyPicker` + `reprojection` hook added. 0002 delete-guard (crit. 6) done; only its sub-category editor remains. Dashboard "spent" + donut now driven by real transactions. 20 unit tests green; flows verified end-to-end with Playwright.
 - **2026-09-07** — **0002 ✅ complete** — sub-category editor (add/rename/reorder/remove) on the jar screen, working for both existing and not-yet-created jars. 23 unit tests green. **Phase 1 status: 0001–0006 all ✅; remaining 0007–0010.**
+- **2026-09-07** — **0007 ✅ accumulation jars & withdrawals** — new jar detail page (`/jars/:id`; editor moved to `/jars/:id/edit`) with balance/target, an SVG balance-over-time chart, inline withdraw form + withdrawals list; flow jars get a simpler spent-vs-cap detail. `emitReprojection('withdrawal')` wired for 0009. 28 tests green. **Remaining: 0008 CSV import, 0009 projections, 0010 PWA polish.**
