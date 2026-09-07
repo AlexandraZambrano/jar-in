@@ -1,6 +1,8 @@
 /** Money helpers. Storage is always integer minor units + an ISO-4217 code.
  *  See docs/decisions/0004-money-and-currency.md. */
 
+import { APP_LOCALE } from './locale';
+
 const ZERO_DECIMAL = new Set([
   'JPY',
   'KRW',
@@ -33,11 +35,11 @@ export function addMinor(...values: number[]): number {
   return values.reduce((a, b) => a + b, 0);
 }
 
-/** Locale-aware currency string. */
+/** Currency string in the app's fixed English locale (override only for tests). */
 export function formatMoney(
   minor: number,
   currency: string,
-  locale?: string,
+  locale: string = APP_LOCALE,
 ): string {
   try {
     return new Intl.NumberFormat(locale, {

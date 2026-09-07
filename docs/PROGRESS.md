@@ -5,6 +5,23 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Locale: force the whole app to English
+
+Reported: "On track to reach 2100,00 € around abril de 2027" — mixed
+English UI copy + Spanish-locale number/date formatting.
+
+Cause: `formatMoney` / `monthLabel` / day grouping were fed
+`navigator.language`. Fix: `src/lib/locale.ts` → `APP_LOCALE = 'en-GB'`;
+`formatMoney`, `monthLabel`, `dayLabel`/`groupByDay`, `currencyLabel`
+default to it; the 8 components that derived a locale from the device now
+use `APP_LOCALE`. The device locale survives only in `deviceLocale()`,
+used solely to guess a default currency for new wallets/income (currency
+≠ language). Test locks in `€2,100.00` / `April 2027`. Verified under an
+`es-ES` / Europe/Madrid context — every screen renders English. ADR 0004
+updated.
+
+---
+
 ## 2026-09-07 — Post-Phase-1 review: specs drafted, fix pack 0012 shipped
 
 **Drafted (in review — no code):**

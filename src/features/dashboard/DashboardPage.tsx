@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
+import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import { formatMoney } from '@/lib/money';
@@ -30,7 +31,7 @@ export function DashboardPage() {
   const cvd = prefs.a11y.includes('cvd');
   const calm = prefs.a11y.includes('calm');
   const patterns = prefs.a11y.includes('patterns');
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);

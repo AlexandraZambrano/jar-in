@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
+import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import type { IncomeSource, Wallet } from '@/db/schemas';
 import { Sticker } from '@/components/Sticker';
@@ -18,7 +19,7 @@ const FREQ_LABEL: Record<string, string> = {
 
 export function IncomePage() {
   const db = useDb();
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
   const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
   const { data: wallets } = useRxQuery<Wallet>(() => db.wallets.find(), [db]);
   const walletName = (wid: string) => wallets.find((w) => w.id === wid)?.name ?? '—';

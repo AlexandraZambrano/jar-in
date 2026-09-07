@@ -1,5 +1,6 @@
 import type { Transaction } from '@/db/schemas';
 import { todayISO } from '@/lib/date';
+import { APP_LOCALE } from '@/lib/locale';
 
 export function isUnassigned(txn: Transaction, activeJarIds: Set<string>): boolean {
   return !activeJarIds.has(txn.jarId);
@@ -25,7 +26,11 @@ function dayOffset(iso: string, ref: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
-export function dayLabel(iso: string, locale?: string, ref: string = todayISO()): string {
+export function dayLabel(
+  iso: string,
+  locale: string = APP_LOCALE,
+  ref: string = todayISO(),
+): string {
   const d = dayOffset(iso, ref);
   if (d === 0) return 'Today';
   if (d === 1) return 'Yesterday';
@@ -39,7 +44,7 @@ export function dayLabel(iso: string, locale?: string, ref: string = todayISO())
 /** Newest day first; within a day, newest `createdAt` first. */
 export function groupByDay(
   txns: Transaction[],
-  locale?: string,
+  locale: string = APP_LOCALE,
   ref: string = todayISO(),
 ): DayGroup[] {
   const byDate = new Map<string, Transaction[]>();

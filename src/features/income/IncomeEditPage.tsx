@@ -7,6 +7,7 @@ import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { ConfirmButton } from '@/components/ConfirmButton';
 import { fromMinor, parseAmountInput, toMinor } from '@/lib/money';
 import { defaultCurrencyForLocale } from '@/lib/currencies';
+import { APP_LOCALE, deviceLocale } from '@/lib/locale';
 import { createIncome, deleteIncome, updateIncome } from './incomeRepo';
 
 const FREQUENCIES: { value: IncomeFrequency; label: string }[] = [
@@ -22,7 +23,7 @@ export function IncomeEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isNew = !id || id === 'new';
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
 
   const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
   const { data: wallets } = useRxQuery<Wallet>(() => db.wallets.find(), [db]);
@@ -30,7 +31,7 @@ export function IncomeEditPage() {
 
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState(defaultCurrencyForLocale(locale));
+  const [currency, setCurrency] = useState(defaultCurrencyForLocale(deviceLocale()));
   const [frequency, setFrequency] = useState<IncomeFrequency>('monthly');
   const [walletId, setWalletId] = useState('');
   const [active, setActive] = useState(true);

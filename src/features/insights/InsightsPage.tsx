@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
+import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
@@ -18,7 +19,7 @@ import {
 
 export function InsightsPage() {
   const db = useDb();
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
   const a11y = usePreferences().a11y;
   const cvd = a11y.includes('cvd');
   const calm = a11y.includes('calm');

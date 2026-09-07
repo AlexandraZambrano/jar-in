@@ -1,6 +1,7 @@
 import { useMemo, useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
+import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import type { Jar } from '@/db/schemas';
 import {
@@ -36,7 +37,7 @@ function guessDateOrder(rows: string[][], dateCol: number): DateOrder {
 export function ImportCsvPage() {
   const db = useDb();
   const navigate = useNavigate();
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const jars = useMemo(() => [...jarsRaw].sort((a, b) => a.order - b.order), [jarsRaw]);

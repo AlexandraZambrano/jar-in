@@ -24,6 +24,14 @@ a cached FX table (Phase 2).
 - `fxRates` schema exists from v0 but is unused in v1.
 - Currency decimal digits: default 2; a small override table for known
   exceptions (JPY 0, etc.) lives in `money.ts`. Extend as needed.
+- **The UI is English-only.** All money and date formatting uses a fixed
+  `APP_LOCALE = 'en-GB'` (`src/lib/locale.ts`), never `navigator.language`
+  — otherwise a Spanish device would render "2.100,00 € · abril de 2027"
+  next to hard-coded English copy. The device locale is used *only* to
+  guess a default currency for a new wallet/income source
+  (`deviceLocale()` → `defaultCurrencyForLocale`), since currency ≠
+  language. When app localisation is added later, `APP_LOCALE` becomes a
+  setting.
 
 ## Consequences
 

@@ -5,6 +5,7 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import type { Wallet } from '@/db/schemas';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { defaultCurrencyForLocale } from '@/lib/currencies';
+import { APP_LOCALE, deviceLocale } from '@/lib/locale';
 import { createWallet, deleteWallet, updateWallet } from './walletsRepo';
 
 export function WalletEditPage() {
@@ -12,13 +13,13 @@ export function WalletEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isNew = !id || id === 'new';
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
 
   const { data: wallets } = useRxQuery<Wallet>(() => db.wallets.find(), [db]);
   const existing = useMemo(() => wallets.find((w) => w.id === id), [wallets, id]);
 
   const [name, setName] = useState('');
-  const [currency, setCurrency] = useState(defaultCurrencyForLocale(locale));
+  const [currency, setCurrency] = useState(defaultCurrencyForLocale(deviceLocale()));
   const [error, setError] = useState('');
   const [deleteError, setDeleteError] = useState('');
 

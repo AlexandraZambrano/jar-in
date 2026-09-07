@@ -68,9 +68,9 @@ export function defaultCurrencyForLocale(locale?: string): string {
   return 'EUR';
 }
 
-export function currencyLabel(code: string, locale?: string): string {
+export function currencyLabel(code: string, locale = 'en-GB'): string {
   try {
-    const name = new Intl.DisplayNames([locale ?? 'en'], { type: 'currency' }).of(code);
+    const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(code);
     return name && name !== code ? `${code} — ${name}` : code;
   } catch {
     return code;

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
+import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type { Jar, SubCategory, Transaction } from '@/db/schemas';
@@ -15,7 +16,7 @@ import styles from './TransactionsPage.module.css';
 export function TransactionsPage() {
   const db = useDb();
   const navigate = useNavigate();
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
+  const locale = APP_LOCALE;
   const a11y = usePreferences().a11y;
   const cvd = a11y.includes('cvd');
   const calm = a11y.includes('calm');

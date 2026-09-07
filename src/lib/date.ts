@@ -1,6 +1,8 @@
 /** Date helpers. All persisted dates are ISO strings; month math is whole-month,
  *  timezone-naive on the date part only (see DATA-MODEL.md compute model). */
 
+import { APP_LOCALE } from './locale';
+
 export function nowISO(): string {
   return new Date().toISOString();
 }
@@ -27,7 +29,7 @@ export function wholeMonthsBetween(startISO: string, endISO: string): number {
   return Math.max(0, months);
 }
 
-export function monthLabel(iso: string = nowISO(), locale?: string): string {
+export function monthLabel(iso: string = nowISO(), locale: string = APP_LOCALE): string {
   return new Date(iso).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
