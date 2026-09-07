@@ -42,7 +42,7 @@ export function BalanceTimeline({ points, targetMinor, currency, locale }: Props
     `${path} L${x(points[points.length - 1].date).toFixed(1)} ${y(0).toFixed(1)}` +
     ` L${x(points[0].date).toFixed(1)} ${y(0).toFixed(1)} Z`;
 
-  const withdrawals = points.filter((p) => p.kind === 'withdrawal');
+  const marks = points.filter((p) => p.kind === 'debit');
   const targetY = targetMinor ? y(targetMinor) : null;
 
   return (
@@ -53,7 +53,7 @@ export function BalanceTimeline({ points, targetMinor, currency, locale }: Props
         role="img"
         aria-label={`Balance over time. Now ${formatMoney(points[points.length - 1].balanceMinor, currency, locale)}${
           targetMinor ? ` of ${formatMoney(targetMinor, currency, locale)}` : ''
-        }. ${withdrawals.length} withdrawal${withdrawals.length === 1 ? '' : 's'}.`}
+        }. ${marks.length} marker${marks.length === 1 ? '' : 's'}.`}
       >
         <path className={styles.area} d={areaPath} />
         <path className={styles.line} d={path} />
@@ -67,7 +67,7 @@ export function BalanceTimeline({ points, targetMinor, currency, locale }: Props
           </>
         )}
 
-        {withdrawals.map((p, i) => (
+        {marks.map((p, i) => (
           <circle
             key={`${p.date}-${i}`}
             className={styles.wdot}

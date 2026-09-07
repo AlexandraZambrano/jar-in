@@ -4,6 +4,7 @@ import { useDb } from '@/db/RxdbProvider';
 import { useRxQuery } from '@/lib/useRxQuery';
 import type { Jar, SubCategory, Transaction } from '@/db/schemas';
 import { Keypad } from '@/components/Keypad';
+import { ConfirmButton } from '@/components/ConfirmButton';
 import { currencyDecimals, fromMinor, parseAmountInput, toMinor } from '@/lib/money';
 import { todayISO } from '@/lib/date';
 import { JarSelect } from './JarSelect';
@@ -78,7 +79,6 @@ export function TransactionFormPage() {
 
   async function onDelete() {
     if (!id) return;
-    if (!confirm('Delete this transaction?')) return;
     await deleteTransaction(db, id);
     navigate('/transactions');
   }
@@ -163,9 +163,7 @@ export function TransactionFormPage() {
         {isNew ? 'Save transaction' : 'Save changes'}
       </button>
       {!isNew && (
-        <button className="btn btn--ghost" type="button" onClick={onDelete}>
-          Delete
-        </button>
+        <ConfirmButton onConfirm={onDelete} caption="This can’t be undone." />
       )}
     </div>
   );

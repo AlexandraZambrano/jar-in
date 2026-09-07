@@ -10,20 +10,22 @@ import styles from './JarCard.module.css';
 interface Props {
   computed: JarComputed;
   cvd: boolean;
+  calm: boolean;
+  patterns: boolean;
   locale?: string;
   tiltSeed: number;
 }
 
-export function JarCard({ computed, cvd, locale, tiltSeed }: Props) {
+export function JarCard({ computed, cvd, calm, patterns, locale, tiltSeed }: Props) {
   const { jar, plannedMinor, actualMinor, targetMinor, ratio, over, goalMet } = computed;
   const navigate = useNavigate();
-  const { fill, on } = resolveJarColors(jar.color, cvd);
+  const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
 
   const money = (m: number) => formatMoney(m, jar.currency, locale);
   const line =
     jar.type === 'flow'
       ? `Flow · ${money(actualMinor)} of ${money(plannedMinor)} spent`
-      : `Growth · ${money(actualMinor)} of ${money(targetMinor ?? 0)}`;
+      : `Growth · ${money(actualMinor)} of ${money(targetMinor ?? 0)} · ${money(plannedMinor)}/mo`;
 
   return (
     <Sticker
@@ -36,7 +38,7 @@ export function JarCard({ computed, cvd, locale, tiltSeed }: Props) {
       onClick={() => navigate(`/jars/${jar.id}`)}
       aria-label={`${jar.name}, ${jar.percentage}% ${jar.type === 'flow' ? 'flow jar' : 'growth jar'}. ${line}`}
     >
-      {cvd && jar.pattern !== 'solid' && (
+      {patterns && jar.pattern !== 'solid' && (
         <span
           className={styles.pattern}
           aria-hidden="true"

@@ -5,6 +5,7 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type { Jar, JarPattern, JarType, SubCategory } from '@/db/schemas';
 import { Icon, JAR_ICON_NAMES, type IconName } from '@/components/icons';
+import { ConfirmButton } from '@/components/ConfirmButton';
 import { fromMinor, parseAmountInput, toMinor } from '@/lib/money';
 import { newId } from '@/lib/id';
 import { move } from '@/lib/reorder';
@@ -43,6 +44,19 @@ export function JarEditPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Staged sub-categories for a not-yet-created jar.
   const [pendingSubs, setPendingSubs] = useState<SubItem[]>([]);
+  const [txCount, setTxCount] = useState(0);
+
+  useEffect(() => {
+    if (isNew || !id) return;
+    let live = true;
+    void db.transactions
+      .count({ selector: { jarId: id } })
+      .exec()
+      .then((n) => live && setTxCount(n));
+    return () => {
+      live = false;
+    };
+  }, [db, id, isNew]);
 
   const currency = existing?.currency ?? jars[0]?.currency ?? DEFAULT_CURRENCY;
 
@@ -127,10 +141,7 @@ export function JarEditPage() {
         type === 'accumulation'
           ? toMinor(parseAmountInput(targetInput) ?? 0, currency)
           : null,
-      openingBalanceMinor:
-        type === 'accumulation'
-          ? toMinor(parseAmountInput(openingInput) ?? 0, currency)
-          : 0,
+      openingBalanceMinor: toMinor(parseAmountInput(openingInput) ?? 0, currency),
     };
 
     if (isNew) {
@@ -144,14 +155,13 @@ export function JarEditPage() {
 
   async function onDelete() {
     if (!id || isNew) return;
-    const txCount = await db.transactions.count({ selector: { jarId: id } }).exec();
-    const msg = txCount
-      ? `Delete this jar? Its ${txCount} transaction${txCount > 1 ? 's are' : ' is'} kept and shown as "Unassigned" until you move ${txCount > 1 ? 'them' : 'it'}.`
-      : 'Delete this jar?';
-    if (!confirm(msg)) return;
     await deleteJar(db, id);
     navigate('/jars');
   }
+
+  const deleteCaption = txCount
+    ? `${txCount} transaction${txCount > 1 ? 's' : ''} stay, shown as “Unassigned” until you move ${txCount > 1 ? 'them' : 'it'}.`
+    : 'This can’t be undone.';
 
   return (
     <div className="screen">
@@ -186,30 +196,34 @@ export function JarEditPage() {
         </label>
 
         {type === 'accumulation' && (
-          <>
-            <label className="field">
-              Target amount ({currency})
-              <input
-                type="text"
-                inputMode="decimal"
-                value={targetInput}
-                onChange={(e) => setTargetInput(e.target.value)}
-                placeholder="10000"
-              />
-              {errors.target && <span className="error">{errors.target}</span>}
-            </label>
-            <label className="field">
-              Opening balance ({currency}) — optional
-              <input
-                type="text"
-                inputMode="decimal"
-                value={openingInput}
-                onChange={(e) => setOpeningInput(e.target.value)}
-                placeholder="0"
-              />
-            </label>
-          </>
+          <label className="field">
+            Target amount ({currency})
+            <input
+              type="text"
+              inputMode="decimal"
+              value={targetInput}
+              onChange={(e) => setTargetInput(e.target.value)}
+              placeholder="10000"
+            />
+            {errors.target && <span className="error">{errors.target}</span>}
+          </label>
         )}
+
+        <label className="field">
+          Opening balance ({currency}) — optional
+          <input
+            type="text"
+            inputMode="decimal"
+            value={openingInput}
+            onChange={(e) => setOpeningInput(e.target.value)}
+            placeholder="0"
+          />
+          <span className="muted" style={{ fontWeight: 400 }}>
+            {type === 'accumulation'
+              ? 'What this jar already holds today.'
+              : 'What you’ve already spent from this jar to date — seeds its running-balance chart.'}
+          </span>
+        </label>
 
         <div className="field">
           Colour
@@ -252,7 +266,7 @@ export function JarEditPage() {
         </div>
 
         <div className="field">
-          Pattern (used in colour-blind-safe mode)
+          Pattern (shows when “Add patterns to jars” is on in Settings)
           <div className="picker-row">
             {PATTERNS.map((p) => (
               <button
@@ -283,9 +297,12 @@ export function JarEditPage() {
           {isNew ? 'Create jar' : 'Save changes'}
         </button>
         {!isNew && (
-          <button className="btn btn--ghost" type="button" onClick={onDelete}>
-            Delete jar
-          </button>
+          <ConfirmButton
+            label="Delete jar"
+            confirmLabel="Really delete this jar?"
+            caption={deleteCaption}
+            onConfirm={onDelete}
+          />
         )}
       </form>
     </div>

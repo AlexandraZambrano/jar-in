@@ -4,6 +4,7 @@ import {
   accumulationBalanceMinor,
   coachMessage,
   computeJar,
+  flowRunningBalanceMinor,
   flowSpentThisMonthMinor,
   jarPlannedMinor,
   monthlyIncome,
@@ -115,6 +116,30 @@ describe('flowSpentThisMonthMinor', () => {
       '2026-06-15T12:00:00Z',
     );
     expect(spent).toBe(8000);
+  });
+});
+
+describe('flowRunningBalanceMinor', () => {
+  it('opening + months*cap - all transactions, clamped at 0', () => {
+    const j = jar({ type: 'flow', startedAt: '2026-01-01', openingBalanceMinor: 10000 });
+    const spent = flowRunningBalanceMinor(
+      j,
+      40000,
+      [
+        txn({ id: '1', jarId: 'j', amountMinor: 25000, date: '2026-02-10' }),
+        txn({ id: '2', jarId: 'j', amountMinor: 15000, date: '2026-03-10' }),
+        txn({ id: '3', jarId: 'other', amountMinor: 99999, date: '2026-03-10' }),
+      ],
+      '2026-05-01',
+    );
+    // opening 10000 + 4 months * 40000 - (25000 + 15000)
+    expect(spent).toBe(10000 + 4 * 40000 - 40000);
+  });
+  it('clamps negative to 0', () => {
+    const j = jar({ type: 'flow', startedAt: '2026-01-01', openingBalanceMinor: 0 });
+    expect(
+      flowRunningBalanceMinor(j, 0, [txn({ jarId: 'j', amountMinor: 5000, date: '2026-02-01' })], '2026-03-01'),
+    ).toBe(0);
   });
 });
 

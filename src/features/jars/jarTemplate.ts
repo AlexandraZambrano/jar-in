@@ -10,7 +10,7 @@ export interface JarTemplateEntry {
   icon: string;
   /** Major units; converted to minor on seed. Accumulation jars only. */
   targetMajor?: number;
-  /** Seed-only: opening balance in major units (accumulation jars). */
+  /** Seed-only: opening balance in major units. */
   openingMajor?: number;
   /** Seed-only: back-date `startedAt` this many months so the demo shows progress. */
   startedMonthsAgo?: number;

@@ -1,9 +1,11 @@
 # 0012 — Fix pack (delete confirm, growth-jar figure, Calm/CVD colour, flow-jar opening balance)
 
-- **Status:** ⬜ not started (spec in review)
+- **Status:** ✅ done
 - **Phase:** 1 (corrections to shipped features)
 - **Spec refs:** DESIGN-STICKER-SHEET.md §2.3, §2.4, §5; SPEC.md §4
 - **Depends on:** 0002, 0005, 0006, 0007
+- **Decisions:** 12d → patterns are a separate opt-in switch. 12e → flow
+  jars get the full balance-over-time chart. (User, 2026-09-07.)
 
 Bundles the corrections raised after the Phase 1 review. Each is small;
 grouped so they ship and get tested together.
@@ -65,43 +67,56 @@ muted fills still clears WCAG AA; screenshots refreshed.
 
 ## 12d — Colour-blind mode: don't force patterns by default
 
-*(needs a decision — see the handover question. This spec assumes
-option A.)*
+**Decision:** patterns become a separate opt-in switch.
 
-**Fix (option A):** CVD mode does the Okabe–Ito hue swap only. Patterns
-become a separate, independent switch: a new `preferences` a11y flag
-`patterns` (Settings: "Add patterns to jars" — available on its own,
-suggested alongside Colour-blind safe). `JarCard` / donut / `Tokens`
-board render the pattern layer only when `patterns` is on, regardless of
-`cvd`. The jar editor's pattern picker still stores a per-jar pattern so
-it's ready when the switch is flipped.
+**Fix:** CVD mode does the Okabe–Ito hue swap only. Patterns move to
+their own independent `preferences` a11y flag `patterns` (Settings: "Add
+patterns to jars", shown near Colour-blind safe with a note that the two
+pair well). `JarCard` / donut / insights render the pattern layer only
+when `patterns` is on, regardless of `cvd`; the two flags are fully
+independent and compose. The jar editor keeps storing a per-jar pattern
+so it's ready when the switch is flipped. `themes.css` `--cvd` flag and
+`DESIGN-STICKER-SHEET.md` §5.2 updated to match.
 
 **Acceptance:** turning on Colour-blind safe changes only the palette;
 patterns appear only when "Add patterns to jars" is also on; the two can
 be used independently; docs/DESIGN-STICKER-SHEET.md §5.2 updated.
 
-## 12e — Flow jars: allow an opening balance + a lifetime figure
+## 12e — Flow jars: opening balance + a balance-over-time chart
 
-*(needs a decision on scope — see the handover question. This spec
-assumes option A.)*
+**Decision:** flow jars get the same running-balance chart as growth
+jars.
 
-**Fix (option A):**
+**Model.** A flow jar is treated as a running account: each month it is
+"credited" its cap (`jarPlannedMinor`), each transaction debits it, and
+`openingBalanceMinor` seeds it. The running balance = *how far ahead or
+behind you are on this jar over time* — surplus rolls forward, an
+overspend goes negative. This is exactly parallel to an accumulation
+jar's `opening + months×planned − withdrawals`, with **transactions** as
+the debit events instead of withdrawals.
 
-1. The jar editor shows **Opening balance (optional)** for flow jars
-   too (not just accumulation). `jarsRepo` stops forcing
-   `openingBalanceMinor = 0` for flow.
-2. Flow jar **detail** gains a secondary "All time" line under the
-   this-month headline: `lifetime spent = openingBalanceMinor + Σ all
-   transactions for the jar`, with the count and the date range. The
-   this-month-vs-cap headline and progress bar are unchanged (still the
-   primary metric for a flow jar).
-3. `dashboard/compute.ts` gets `flowLifetimeSpentMinor(jar, txns)`,
-   unit-tested. No schema change (`openingBalanceMinor` already exists on
-   every jar).
+**Fix:**
+
+1. Jar editor shows **Opening balance (optional)** for flow jars too;
+   `jarsRepo` stops forcing `openingBalanceMinor = 0` for flow.
+2. Generalise `jars/timeline.ts`: `buildBalanceTimeline(jar,
+   monthlyCreditMinor, debitEvents, ref)` where `debitEvents` is a
+   normalised `{ amountMinor, date, label }[]` — withdrawals for
+   accumulation, transactions (as debits) for flow. Point count, ordering
+   and 0-clamp behaviour stay; its final point still matches the
+   deterministic balance for that jar type.
+3. `JarDetailPage` renders the chart for **both** jar types. Flow: the
+   headline stays "spent this month / cap" + progress (primary metric);
+   the chart is the secondary "over time" view with transaction markers.
+   Accumulation: unchanged.
+4. `dashboard/compute.ts` gets `flowRunningBalanceMinor(jar, planned,
+   txns, ref)` (opening + monthsElapsed×planned − Σ txns, clamped ≥ 0 for
+   display), unit-tested; the chart's endpoint equals it.
 
 **Acceptance:** a flow jar can be given an opening balance; its detail
-shows a correct all-time spent figure; the monthly cap view is
-untouched; DATA-MODEL.md compute notes updated.
+shows a running-balance chart seeded by it, with transaction markers,
+whose endpoint matches `flowRunningBalanceMinor`; the monthly cap
+headline is unchanged; DATA-MODEL.md compute notes updated.
 
 ## Test notes
 
@@ -115,3 +130,29 @@ untouched; DATA-MODEL.md compute notes updated.
 ## Changelog
 
 - **2026-09-07** — spec created; in review. 12a (delete) is a P0 bug.
+- **2026-09-07** — **all shipped.**
+  - **12a** `ConfirmButton` (two-step, no `window.confirm`); replaces the
+    delete guard on transactions, jars, income and withdrawals. eslint
+    `no-alert` + `no-restricted-globals` (`confirm/alert/prompt`) added —
+    `src/` is clean. RTL test for the state machine. Verified
+    end-to-end: all three deletes work with **no native dialog**.
+  - **12b** growth `JarCard` line → `Growth · €X of €Y · €Z/mo`; jar
+    detail headline gains `· +€Z/mo`.
+  - **12c** `resolveJarColors(hex, { cvd, calm })` — `calm` mixes the
+    fill toward a warm grey (`muteHex`). All jar surfaces (cards, donut,
+    detail, insights, jar list, JarSelect) read through it. Verified:
+    Calm now visibly desaturates every jar.
+  - **12d** new a11y flag `patterns` (Settings: "Add patterns to jars").
+    CVD mode is the Okabe–Ito swap only; the pattern overlay renders
+    only when `patterns` is on, independent of `cvd`. Verified: CVD
+    alone → 0 pattern overlays; CVD + patterns → overlays back.
+  - **12e** Opening balance field now shows for flow jars too;
+    `jarsRepo` no longer forces it to 0. `jars/timeline.ts` generalised
+    to `buildBalanceTimeline(jar, monthlyCreditMinor, debits, ref)` with
+    normalised `DebitEvent`s (withdrawals for accumulation, transactions
+    for flow). `JarDetailPage` renders the running-balance chart for
+    **both** types (flow keeps "spent this month / cap" as the
+    headline). `flowRunningBalanceMinor` added + unit-tested. Flow jars
+    are **not** back-dated in the seed, so a fresh flow jar shows the
+    "fills in as months pass" empty state until it has history.
+  - 60 unit tests green.

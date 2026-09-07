@@ -5,6 +5,46 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Post-Phase-1 review: specs drafted, fix pack 0012 shipped
+
+**Drafted (in review — no code):**
+
+- `features/0011-first-run-onboarding.md` — a first-run questionnaire →
+  deterministic jar proposal into the normal editable setup + a one-time
+  app tour. AI wording folds in at Phase 3.
+- `DEPLOYMENT.md` — CI gate (`npm run check` + a headless e2e suite)
+  before a Coolify deploy; a per-feature automated-test requirement.
+
+**Shipped — 0012 fix pack:**
+
+- **12a (P0)** "Delete does nothing" — `window.confirm()` returns
+  `false` whenever the browser suppresses the dialog, silently
+  no-op'ing the delete. New `components/ConfirmButton` (two-step, no
+  native dialog) replaces the guard on transaction / jar / income /
+  withdrawal delete. eslint now bans `confirm/alert/prompt`. RTL test +
+  end-to-end verification (no dialog ever fires).
+- **12b** Growth `JarCard` line → `Growth · €X of €Y · €Z/mo`; jar
+  detail headline gains `· +€Z/mo`.
+- **12c** Calm mode mutes the jar colours — `resolveJarColors(hex,
+  { cvd, calm })`, `calm` mixes toward warm grey. Reads through every
+  jar surface.
+- **12d** Colour-blind mode = Okabe–Ito swap only; patterns moved to
+  their own `patterns` a11y flag ("Add patterns to jars" in Settings),
+  independent of `cvd`.
+- **12e** Opening balance available for flow jars; `jars/timeline.ts`
+  generalised (`DebitEvent`s); flow jar detail gets a running-balance
+  chart while keeping "spent this month / cap" as the headline.
+  `flowRunningBalanceMinor` added + tested.
+
+**Verified:** `npm run check` green — 60 tests (added `ConfirmButton`,
+`flowRunningBalanceMinor`). All five fixes checked end-to-end with
+Playwright. Screenshots refreshed.
+
+**Next:** 0011 onboarding (spec needs your sign-off), then the CI
+pipeline from DEPLOYMENT.md.
+
+---
+
 ## 2026-09-07 — Feature 0010: PWA polish · Phase 1 complete
 
 **Added**

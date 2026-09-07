@@ -86,7 +86,22 @@ export function SettingsPage() {
                 <strong>Colour-blind safe</strong>
                 <br />
                 <span className="muted">
-                  Okabe–Ito jar colours plus a pattern on every jar.
+                  Swaps the jar palette for the Okabe–Ito set.
+                </span>
+              </span>
+            </label>
+            <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <input
+                type="checkbox"
+                checked={prefs.a11y.includes('patterns')}
+                onChange={(e) => toggleA11y('patterns', e.target.checked)}
+              />
+              <span>
+                <strong>Add patterns to jars</strong>
+                <br />
+                <span className="muted">
+                  A distinct texture per jar, so colour isn’t the only cue. Pairs
+                  well with Colour-blind safe.
                 </span>
               </span>
             </label>

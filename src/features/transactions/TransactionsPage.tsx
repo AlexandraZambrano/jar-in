@@ -16,7 +16,9 @@ export function TransactionsPage() {
   const db = useDb();
   const navigate = useNavigate();
   const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
-  const cvd = usePreferences().a11y.includes('cvd');
+  const a11y = usePreferences().a11y;
+  const cvd = a11y.includes('cvd');
+  const calm = a11y.includes('calm');
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const jars = useMemo(() => [...jarsRaw].sort((a, b) => a.order - b.order), [jarsRaw]);
@@ -82,7 +84,7 @@ export function TransactionsPage() {
               const jar = jarById.get(t.jarId);
               const orphan = isUnassigned(t, activeJarIds);
               const { fill } = jar
-                ? resolveJarColors(jar.color, cvd)
+                ? resolveJarColors(jar.color, { cvd, calm })
                 : { fill: 'var(--ink-soft)' };
               return (
                 <Sticker key={t.id} tiltSeed={i + 1} style={{ padding: 0 }}>

@@ -16,6 +16,7 @@ import { Icon, type IconName } from '@/components/icons';
 import { formatMoney, parseAmountInput, toMinor } from '@/lib/money';
 import { isSameMonth, nowISO, todayISO } from '@/lib/date';
 import { computeJar, jarPlannedMinor, monthlyIncome } from '@/features/dashboard/compute';
+import { ConfirmButton } from '@/components/ConfirmButton';
 import {
   methodLabel,
   monthlyBalanceSeries,
@@ -34,7 +35,9 @@ export function JarDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
-  const cvd = usePreferences().a11y.includes('cvd');
+  const a11y = usePreferences().a11y;
+  const cvd = a11y.includes('cvd');
+  const calm = a11y.includes('calm');
 
   const { data: jars } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
@@ -68,7 +71,7 @@ export function JarDetailPage() {
     );
   }
 
-  const { fill, on } = resolveJarColors(jar.color, cvd);
+  const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
   const money = (m: number) => formatMoney(m, jar.currency, locale);
   const c = computeJar(jar, inc.minor, txns, withdrawals);
   const planned = jarPlannedMinor(jar, inc.minor);
@@ -76,6 +79,28 @@ export function JarDetailPage() {
   const jarWithdrawals = withdrawals
     .filter((w) => w.jarId === jar.id)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  const jarTxns = txns.filter((t) => t.jarId === jar.id);
+  const timelinePoints =
+    jar.type === 'accumulation'
+      ? buildBalanceTimeline(
+          jar,
+          planned,
+          jarWithdrawals.map((w) => ({
+            amountMinor: w.amountMinor,
+            date: w.date,
+            label: w.reason || 'Withdrawal',
+          })),
+        )
+      : buildBalanceTimeline(
+          jar,
+          planned,
+          jarTxns.map((t) => ({
+            amountMinor: t.amountMinor,
+            date: t.date,
+            label: t.note || 'Spent',
+          })),
+        );
 
   async function submitWithdrawal() {
     const parsed = parseAmountInput(amount);
@@ -132,6 +157,18 @@ export function JarDetailPage() {
             label={`${money(c.actualMinor)} of ${money(c.plannedMinor)} spent`}
           />
 
+          <Sticker tiltSeed={2} className={styles.chartCard} style={{ color: fill }}>
+            <div className="muted" style={{ fontSize: 'var(--step-caption)', marginBottom: 4 }}>
+              Running balance · +{money(planned)}/mo credited, spending drawn down
+            </div>
+            <BalanceTimeline
+              points={timelinePoints}
+              targetMinor={null}
+              currency={jar.currency}
+              locale={locale}
+            />
+          </Sticker>
+
           <h2 className="screen-title" style={{ fontSize: 'var(--step-title)' }}>
             This month
           </h2>
@@ -174,7 +211,8 @@ export function JarDetailPage() {
               </span>
             </div>
             <div className={styles.bigSub}>
-              {Math.round(c.ratio * 100)}% to goal{c.goalMet ? ' · goal reached' : ''}
+              {Math.round(c.ratio * 100)}% to goal · +{money(planned)}/mo
+              {c.goalMet ? ' · goal reached' : ''}
             </div>
           </div>
           <ProgressBar
@@ -187,7 +225,7 @@ export function JarDetailPage() {
 
           <Sticker tiltSeed={2} className={styles.chartCard} style={{ color: fill }}>
             <BalanceTimeline
-              points={buildBalanceTimeline(jar, planned, withdrawals)}
+              points={timelinePoints}
               targetMinor={jar.targetAmountMinor}
               currency={jar.currency}
               locale={locale}
@@ -318,14 +356,12 @@ export function JarDetailPage() {
                       <span className={styles.wrowDate}>{w.date}</span>
                     </span>
                     <span className={styles.wrowAmt}>−{money(w.amountMinor)}</span>
-                    <button
-                      type="button"
-                      className={styles.del}
+                    <ConfirmButton
+                      compact
                       aria-label={`Delete withdrawal of ${money(w.amountMinor)} on ${w.date}`}
-                      onClick={() => deleteWithdrawal(db, w.id)}
-                    >
-                      <Icon name="plus" size={15} style={{ transform: 'rotate(45deg)' }} />
-                    </button>
+                      confirmLabel="Delete"
+                      onConfirm={() => deleteWithdrawal(db, w.id)}
+                    />
                   </Sticker>
                 ))}
               </div>

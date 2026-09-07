@@ -12,7 +12,9 @@ import styles from './JarsPage.module.css';
 
 export function JarsPage() {
   const db = useDb();
-  const cvd = usePreferences().a11y.includes('cvd');
+  const a11y = usePreferences().a11y;
+  const cvd = a11y.includes('cvd');
+  const calm = a11y.includes('calm');
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const jars = useMemo(() => [...jarsRaw].sort((a, b) => a.order - b.order), [jarsRaw]);
   const health = planHealth(jars);
@@ -35,7 +37,7 @@ export function JarsPage() {
 
       <div className="stack">
         {jars.map((jar, i) => {
-          const { fill, on } = resolveJarColors(jar.color, cvd);
+          const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
           return (
             <Sticker key={jar.id} gloss fill={fill} on={on} tiltSeed={i + 1}>
               <Link to={`/jars/${jar.id}`} className={styles.row}>

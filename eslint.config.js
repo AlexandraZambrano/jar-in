@@ -25,6 +25,8 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'jsx-a11y/label-has-associated-control': ['error', { depth: 3 }],
+      'no-alert': 'error',
+      'no-restricted-globals': ['error', 'confirm', 'alert', 'prompt'],
     },
   },
   {

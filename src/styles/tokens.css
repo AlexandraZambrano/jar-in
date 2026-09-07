@@ -62,4 +62,5 @@
 
   /* accessibility flags (JS also reads these via getComputedStyle where useful) */
   --cvd: 0;
+  --patterns: 0;
 }

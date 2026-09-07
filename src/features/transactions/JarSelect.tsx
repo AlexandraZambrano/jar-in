@@ -11,11 +11,13 @@ interface Props {
 }
 
 export function JarSelect({ jars, value, onChange }: Props) {
-  const cvd = usePreferences().a11y.includes('cvd');
+  const a11y = usePreferences().a11y;
+  const cvd = a11y.includes('cvd');
+  const calm = a11y.includes('calm');
   return (
     <div className={styles.row} role="radiogroup" aria-label="Jar">
       {jars.map((jar) => {
-        const { fill, on } = resolveJarColors(jar.color, cvd);
+        const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
         const selected = jar.id === value;
         return (
           <button

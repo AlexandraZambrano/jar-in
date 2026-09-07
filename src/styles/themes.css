@@ -96,8 +96,12 @@
 }
 
 /* ── Colour-blind safe ──
-   The Okabe–Ito hue swap is done per-jar in JS (jarPalette.ts); this flag turns
-   the pattern layer on everywhere it is available. */
+   Okabe–Ito hue swap only, done per-jar in JS (jarPalette.ts). The pattern
+   overlay is a separate opt-in (`data-a11y~='patterns'`); Calm colour muting
+   is also JS-side. These flags are informational for CSS. */
 :root[data-a11y~='cvd'] {
   --cvd: 1;
+}
+:root[data-a11y~='patterns'] {
+  --patterns: 1;
 }

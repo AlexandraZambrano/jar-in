@@ -61,6 +61,22 @@ export function accumulationBalanceMinor(
   return Math.max(0, contributed - withdrawn);
 }
 
+/** Flow jar treated as a running account: opening + each month's cap credited,
+ *  every transaction debited. How far ahead/behind you are over time. */
+export function flowRunningBalanceMinor(
+  jar: Jar,
+  plannedPerMonthMinor: number,
+  transactions: Transaction[],
+  ref: string = nowISO(),
+): number {
+  const months = wholeMonthsBetween(jar.startedAt, ref);
+  const credited = jar.openingBalanceMinor + months * plannedPerMonthMinor;
+  const spent = transactions
+    .filter((t) => t.jarId === jar.id)
+    .reduce((s, t) => s + t.amountMinor, 0);
+  return Math.max(0, credited - spent);
+}
+
 export interface PlanHealth {
   total: number;
   delta: number;

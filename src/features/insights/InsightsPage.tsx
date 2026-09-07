@@ -19,7 +19,9 @@ import {
 export function InsightsPage() {
   const db = useDb();
   const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
-  const cvd = usePreferences().a11y.includes('cvd');
+  const a11y = usePreferences().a11y;
+  const cvd = a11y.includes('cvd');
+  const calm = a11y.includes('calm');
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
   const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
@@ -49,7 +51,7 @@ export function InsightsPage() {
           const c = computeJar(jar, inc.minor, txns, withdrawals);
           const series = monthlyBalanceSeries(jar, c.plannedMinor, withdrawals);
           const p = projectGoalDate(jar, series, c.plannedMinor);
-          const { fill, on } = resolveJarColors(jar.color, cvd);
+          const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
           return (
             <Sticker key={jar.id} gloss fill={fill} on={on} tiltSeed={i + 1} style={{ padding: 13 }}>
               <Link

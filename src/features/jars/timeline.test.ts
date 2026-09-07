@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Jar, WithdrawalEvent } from '@/db/schemas';
-import { buildBalanceTimeline, withdrawalPoints } from './timeline';
+import type { Jar } from '@/db/schemas';
+import { buildBalanceTimeline, debitPoints, type DebitEvent } from './timeline';
 import { accumulationBalanceMinor } from '@/features/dashboard/compute';
 
 const ts = '2026-01-01T00:00:00.000Z';
@@ -23,22 +23,11 @@ const jar = (p: Partial<Jar>): Jar => ({
   updatedAt: ts,
   ...p,
 });
-const wd = (p: Partial<WithdrawalEvent>): WithdrawalEvent => ({
-  id: 'w',
-  jarId: 'j',
-  amountMinor: 0,
-  currency: 'EUR',
-  date: '2026-03-15',
-  reason: null,
-  createdAt: ts,
-  updatedAt: ts,
-  ...p,
-});
+const debit = (p: Partial<DebitEvent>): DebitEvent => ({ amountMinor: 0, date: '2026-03-15', ...p });
 
 describe('buildBalanceTimeline', () => {
-  it('accrues monthly contributions and ends on the ref date', () => {
+  it('accrues monthly credits and ends on the ref date', () => {
     const pts = buildBalanceTimeline(jar({}), 36000, [], '2026-05-01');
-    // start + 4 monthly accruals + now
     expect(pts.map((p) => p.kind)).toEqual([
       'start',
       'accrual',
@@ -52,26 +41,30 @@ describe('buildBalanceTimeline', () => {
     expect(pts.at(-1)!.date).toBe('2026-05-01');
   });
 
-  it('inserts withdrawal points in date order with a label, after same-day accrual', () => {
+  it('inserts debit points in date order with a label, after same-day accrual', () => {
     const pts = buildBalanceTimeline(
       jar({}),
       36000,
-      [wd({ id: 'w1', amountMinor: 50000, date: '2026-03-15', reason: 'Car repair' })],
+      [debit({ amountMinor: 50000, date: '2026-03-15', label: 'Car repair' })],
       '2026-05-01',
     );
-    const w = withdrawalPoints(pts);
-    expect(w).toHaveLength(1);
-    expect(w[0].label).toBe('Car repair');
-    expect(w[0].deltaMinor).toBe(-50000);
-    // dates are non-decreasing
+    const d = debitPoints(pts);
+    expect(d).toHaveLength(1);
+    expect(d[0].label).toBe('Car repair');
+    expect(d[0].deltaMinor).toBe(-50000);
     const dates = pts.map((p) => p.date);
     expect([...dates].sort()).toEqual(dates);
   });
 
-  it("final point matches the dashboard's accumulationBalanceMinor", () => {
+  it("accumulation final point matches accumulationBalanceMinor", () => {
     const j = jar({ openingBalanceMinor: 20000 });
-    const withdrawals = [wd({ id: 'w1', amountMinor: 15000, date: '2026-03-01' })];
-    const pts = buildBalanceTimeline(j, 10000, withdrawals, '2026-05-01');
+    const withdrawals = [{ id: 'w1', jarId: 'j', amountMinor: 15000, currency: 'EUR', date: '2026-03-01', reason: null, createdAt: ts, updatedAt: ts }];
+    const pts = buildBalanceTimeline(
+      j,
+      10000,
+      withdrawals.map((w) => ({ amountMinor: w.amountMinor, date: w.date })),
+      '2026-05-01',
+    );
     expect(pts.at(-1)!.balanceMinor).toBe(
       accumulationBalanceMinor(j, 10000, withdrawals, '2026-05-01'),
     );
@@ -81,7 +74,7 @@ describe('buildBalanceTimeline', () => {
     const pts = buildBalanceTimeline(
       jar({ openingBalanceMinor: 0 }),
       0,
-      [wd({ id: 'w1', amountMinor: 99999, date: '2026-02-01' })],
+      [debit({ amountMinor: 99999, date: '2026-02-01' })],
       '2026-03-01',
     );
     expect(pts.every((p) => p.balanceMinor >= 0)).toBe(true);

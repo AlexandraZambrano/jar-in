@@ -221,15 +221,24 @@ Auto-on with `prefers-reduced-motion: reduce` **or**
 - Progress bars 8px → 12px, with a 2px border.
 - Donut static; all transitions ≤ 1 frame.
 - Coach note: Hanken face, no rotation, keeps paper + hard shadow.
+- **Jar colours are muted** — `resolveJarColors` mixes each fill ~44%
+  toward a warm grey. Dials the candy palette down without changing the
+  hue relationships. Composes with Dark and CVD.
 
 ### 5.2 Colour-blind safe
 
-- Jar palette → Okabe–Ito (§2.4). Every jar simultaneously shows
-  colour + **pattern** + icon + text label + numeric %.
-- Donut: segment dividers + leader-line legend.
+- Jar palette → Okabe–Ito (§2.4). This is the **only** thing the mode
+  does — the redundant **pattern** layer is a *separate* switch ("Add
+  patterns to jars", a11y flag `patterns`) so people who don't need the
+  extra texture aren't forced into it. The two flags are independent and
+  compose; each jar still stores a `pattern` so the switch works instantly.
+- With `patterns` on: every jar shows colour + pattern + icon + label + %.
+- Donut: segment dividers always in CVD; a leader-line legend when
+  `patterns` is also on.
 - Status is never colour-only: over-cap shows `⚠ over`, on-track `✓`.
 - Contrast targets: fill vs. adjacent fill/bg ≥ **3:1**; text ≥
-  **4.5:1**.
+  **4.5:1**. (Okabe–Ito green/yellow text-on-fill is a known weak spot —
+  tracked follow-up.)
 
 ### 5.3 Dark
 
@@ -272,8 +281,9 @@ Auto-on with `prefers-reduced-motion: reduce` **or**
   ```
 
 - A **jar** row in the data model carries `color`, `pattern`, and
-  `icon`. Rendering *always* uses all three; the CVD toggle only changes
-  which `color`/`pattern` values are active, not whether patterns show.
+  `icon`. The `cvd` flag swaps which `color` value is used (candy ↔
+  Okabe–Ito); the separate `patterns` flag decides whether the `pattern`
+  overlay renders at all; `calm` mutes whichever `color` is active.
 - `pattern` values: `solid | hatch | dots | hline | grid | vline`,
   implemented as CSS `repeating-linear-gradient` / `radial-gradient`
   overlays (no image assets).

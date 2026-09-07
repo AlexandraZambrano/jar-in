@@ -139,10 +139,17 @@ derived on read:
 - **Accumulation jar — balance** =
   `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
    − Σ withdrawalEvents`, clamped ≥ 0. Progress = `balance / targetAmountMinor`.
-  The jar-detail chart (`jars/timeline.ts`) expands this into a point
-  series — contributions accrue at each whole-month boundary from
-  `startedAt`, withdrawals subtract on their date — and its final point
-  equals the balance above.
+- **Flow jar — running balance** =
+  `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
+   − Σ transactions`, clamped ≥ 0 (`flowRunningBalanceMinor`). This is a
+  *secondary* view — the flow jar's primary metric stays spent-this-month
+  vs. cap. Opening balance is now settable on any jar type.
+- The jar-detail chart (`jars/timeline.ts` — `buildBalanceTimeline(jar,
+  monthlyCreditMinor, debits, ref)`) expands whichever of the two applies
+  into a point series: the monthly credit accrues at each whole-month
+  boundary, each `DebitEvent` (a withdrawal, or a transaction for a flow
+  jar) subtracts on its date, and the final point equals the balance
+  above.
 - **Plan health** = `Σ jar.percentage`. `= 100` balanced; `≠ 100`
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
 - **Projections** (`projections/project.ts`) are fully derived — nothing

@@ -5,7 +5,9 @@
 import { useSyncExternalStore } from 'react';
 
 export type ThemePref = 'system' | 'light' | 'dark';
-export type A11yFlag = 'calm' | 'cvd' | 'motion-ok';
+export type A11yFlag = 'calm' | 'cvd' | 'patterns' | 'motion-ok';
+
+const A11Y_FLAGS: readonly A11yFlag[] = ['calm', 'cvd', 'patterns', 'motion-ok'];
 
 export interface Preferences {
   theme: ThemePref;
@@ -26,7 +28,7 @@ function load(): Preferences {
     return {
       theme: parsed.theme === 'light' || parsed.theme === 'dark' ? parsed.theme : 'system',
       a11y: Array.isArray(parsed.a11y)
-        ? parsed.a11y.filter((f): f is A11yFlag => f === 'calm' || f === 'cvd' || f === 'motion-ok')
+        ? parsed.a11y.filter((f): f is A11yFlag => (A11Y_FLAGS as string[]).includes(f))
         : [],
     };
   } catch {

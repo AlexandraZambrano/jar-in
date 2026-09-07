@@ -4,6 +4,7 @@ import { useDb } from '@/db/RxdbProvider';
 import { useRxQuery } from '@/lib/useRxQuery';
 import type { IncomeFrequency, IncomeSource, Wallet } from '@/db/schemas';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
+import { ConfirmButton } from '@/components/ConfirmButton';
 import { fromMinor, parseAmountInput, toMinor } from '@/lib/money';
 import { defaultCurrencyForLocale } from '@/lib/currencies';
 import { createIncome, deleteIncome, updateIncome } from './incomeRepo';
@@ -78,7 +79,6 @@ export function IncomeEditPage() {
 
   async function onDelete() {
     if (!id || isNew) return;
-    if (!confirm('Delete this income source?')) return;
     await deleteIncome(db, id);
     navigate('/income');
   }
@@ -157,11 +157,7 @@ export function IncomeEditPage() {
         <button className="btn" type="submit">
           {isNew ? 'Create income source' : 'Save changes'}
         </button>
-        {!isNew && (
-          <button className="btn btn--ghost" type="button" onClick={onDelete}>
-            Delete
-          </button>
-        )}
+        {!isNew && <ConfirmButton onConfirm={onDelete} />}
       </form>
     </div>
   );

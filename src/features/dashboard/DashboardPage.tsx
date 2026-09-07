@@ -28,6 +28,8 @@ export function DashboardPage() {
   const db = useDb();
   const prefs = usePreferences();
   const cvd = prefs.a11y.includes('cvd');
+  const calm = prefs.a11y.includes('calm');
+  const patterns = prefs.a11y.includes('patterns');
   const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
@@ -80,7 +82,7 @@ export function DashboardPage() {
   }, [projSnaps]);
 
   const segments: DonutSegment[] = computed.map((c) => {
-    const { fill, on } = resolveJarColors(c.jar.color, cvd);
+    const { fill, on } = resolveJarColors(c.jar.color, { cvd, calm });
     const planned = c.jar.percentage;
     const actual =
       c.jar.type === 'flow'
@@ -147,7 +149,15 @@ export function DashboardPage() {
 
       <div className="stack">
         {computed.map((c, i) => (
-          <JarCard key={c.jar.id} computed={c} cvd={cvd} locale={locale} tiltSeed={i + 1} />
+          <JarCard
+            key={c.jar.id}
+            computed={c}
+            cvd={cvd}
+            calm={calm}
+            patterns={patterns}
+            locale={locale}
+            tiltSeed={i + 1}
+          />
         ))}
       </div>
 

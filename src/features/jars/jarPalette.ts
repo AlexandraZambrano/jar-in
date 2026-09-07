@@ -25,6 +25,15 @@ export const JAR_PALETTE: PaletteEntry[] = [
 
 const byCandy = new Map(JAR_PALETTE.map((e) => [e.candy.toLowerCase(), e]));
 
+function toRgb(hex: string): [number, number, number] {
+  const c = hex.replace('#', '');
+  return [
+    parseInt(c.slice(0, 2), 16),
+    parseInt(c.slice(2, 4), 16),
+    parseInt(c.slice(4, 6), 16),
+  ];
+}
+
 export function pickReadableInk(hex: string): string {
   const c = hex.replace('#', '');
   if (c.length < 6) return '#2b2440';
@@ -34,15 +43,42 @@ export function pickReadableInk(hex: string): string {
   return L > 0.45 ? '#2b2440' : '#ffffff';
 }
 
-/** Resolve a jar's stored hex to the fill + on-fill colour for the active mode. */
-export function resolveJarColors(hex: string, cvd: boolean): { fill: string; on: string } {
+/** Mix a hex toward a warm grey — used to dial jar colours down in Calm mode. */
+export function muteHex(hex: string, t = 0.44): string {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
+  const [r, g, b] = toRgb(hex);
+  const [gr, gg, gb] = [168, 162, 154]; // #a8a29a
+  const m = (a: number, c: number) => Math.round(a + (c - a) * t);
+  return `#${[m(r, gr), m(g, gg), m(b, gb)].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+}
+
+export interface JarColorMode {
+  cvd?: boolean;
+  calm?: boolean;
+}
+
+/** Resolve a jar's stored hex to the fill + on-fill colour for the active modes. */
+export function resolveJarColors(
+  hex: string,
+  mode: JarColorMode | boolean = {},
+): { fill: string; on: string } {
+  // `true`/`false` still accepted as a shorthand for `{ cvd }`.
+  const { cvd = false, calm = false } = typeof mode === 'boolean' ? { cvd: mode } : mode;
   const entry = byCandy.get(hex.toLowerCase());
+  let fill: string;
+  let on: string;
   if (entry) {
-    return cvd
-      ? { fill: entry.cvd, on: entry.onCvd }
-      : { fill: entry.candy, on: entry.onCandy };
+    fill = cvd ? entry.cvd : entry.candy;
+    on = cvd ? entry.onCvd : entry.onCandy;
+  } else {
+    fill = hex;
+    on = pickReadableInk(hex);
   }
-  return { fill: hex, on: pickReadableInk(hex) };
+  if (calm) {
+    fill = muteHex(fill);
+    on = pickReadableInk(fill);
+  }
+  return { fill, on };
 }
 
 /** CSS background-image for a pattern overlay (used in colour-blind-safe mode). */
