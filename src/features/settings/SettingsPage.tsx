@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   usePreferences,
@@ -6,6 +7,8 @@ import {
   type ThemePref,
 } from '@/lib/preferences';
 import { Sticker } from '@/components/Sticker';
+import { isStandalone } from '@/lib/pwa';
+import { requestPersistence, type StorageStatus } from '@/lib/storagePersistence';
 
 const THEMES: { value: ThemePref; label: string }[] = [
   { value: 'system', label: 'Match device' },
@@ -13,8 +16,20 @@ const THEMES: { value: ThemePref; label: string }[] = [
   { value: 'dark', label: 'Dark' },
 ];
 
+function formatBytes(n?: number): string {
+  if (n == null) return '—';
+  if (n < 1024) return `${n} B`;
+  const kb = n / 1024;
+  if (kb < 1024) return `${kb.toFixed(0)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
+
 export function SettingsPage() {
   const prefs = usePreferences();
+  const [storage, setStorage] = useState<StorageStatus | null>(null);
+  useEffect(() => {
+    void requestPersistence().then(setStorage);
+  }, []);
 
   return (
     <div className="screen">
@@ -79,7 +94,27 @@ export function SettingsPage() {
         </fieldset>
       </Sticker>
 
-      <Sticker tiltSeed={2} style={{ padding: 16 }}>
+      <Sticker gloss tiltSeed={2} style={{ padding: 16 }}>
+        <div className="stack" style={{ gap: 6 }}>
+          <span className="eyebrow">This device</span>
+          <span className="muted" style={{ fontSize: 'var(--step-caption)' }}>
+            {isStandalone() ? 'Installed as an app.' : 'Running in the browser.'}{' '}
+            Your data lives on this device
+            {storage
+              ? storage.persisted
+                ? ' and is marked persistent.'
+                : ' (best-effort — install to the home screen to protect it).'
+              : '.'}
+          </span>
+          {storage?.usageBytes != null && (
+            <span className="muted" style={{ fontSize: 'var(--step-caption)' }}>
+              Using {formatBytes(storage.usageBytes)} of {formatBytes(storage.quotaBytes)}.
+            </span>
+          )}
+        </div>
+      </Sticker>
+
+      <Sticker tiltSeed={4} style={{ padding: 16 }}>
         <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
           <legend className="eyebrow" style={{ marginBottom: 8 }}>
             Manage

@@ -84,6 +84,20 @@ persists the user's choice to `localStorage` and reflects it onto
 `<html data-theme … data-a11y …>`. See
 [`DESIGN-STICKER-SHEET.md`](DESIGN-STICKER-SHEET.md) §5–6.
 
+## PWA
+
+`vite-plugin-pwa` (Workbox `generateSW`) precaches the built shell and
+serves it offline; `navigateFallback: index.html` keeps client routes
+working offline. Google Fonts are runtime-cached (stale-while-revalidate
++ cache-first) so offline uses the real faces. `registerType: autoUpdate`
+— the SW updates in the background, no update prompt. `app/OfflineBadge`
+reflects `navigator.onLine`; `app/InstallPrompt` handles the Chromium
+`beforeinstallprompt` and the iOS "Add to Home Screen" nudge.
+`lib/storagePersistence` calls `navigator.storage.persist()` on boot.
+Icons are rasterised from the jar mark by `scripts/icons.mjs`
+(`npm run icons`). The SW is inactive under `npm run dev` — test PWA
+behaviour with `npm run build && npm run preview`.
+
 ## Testing
 
 Vitest + Testing Library (jsdom). The compute/selector functions carry

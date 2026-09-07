@@ -1,0 +1,20 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px calc(6px + env(safe-area-inset-top, 0px));
+  background: var(--ink);
+  color: var(--bg);
+  font-size: var(--step-caption);
+  font-weight: 700;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}

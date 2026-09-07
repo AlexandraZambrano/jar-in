@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Capture app screenshots for the README / feature specs.
 // Assumes the dev server is running (npm run dev). Usage: npm run shots
-import { chromium } from 'playwright';
+import { chromium, devices } from 'playwright';
 import { mkdir } from 'node:fs/promises';
 
 const BASE = process.env.SHOT_BASE || 'http://localhost:5173';
@@ -146,6 +146,33 @@ for (const s of MODES) {
     await page.screenshot({ path: `${OUT}/${name}.png` });
     console.log('  ✓', name);
   }
+  await ctx.close();
+}
+
+// ── PWA: offline state + iOS install nudge ──
+{
+  const ctx = await browser.newContext(ctxOpts({ theme: 'light', a11y: [] }));
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/`, { waitUntil: 'load' });
+  await page.waitForSelector('nav[aria-label="Primary"]', { timeout: 15000 });
+  await page
+    .waitForFunction(() => navigator.serviceWorker?.controller != null, { timeout: 8000 })
+    .catch(() => {});
+  await ctx.setOffline(true);
+  await page.reload({ waitUntil: 'load' }).catch(() => {});
+  await page.waitForSelector('nav[aria-label="Primary"]', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${OUT}/offline.png` });
+  console.log('  ✓ offline');
+  await ctx.close();
+}
+{
+  const ctx = await browser.newContext({ ...devices['iPhone 13'] });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/`, { waitUntil: 'load' });
+  await page.waitForTimeout(2200); // the iOS nudge appears after ~1.5s
+  await page.screenshot({ path: `${OUT}/install-ios.png` });
+  console.log('  ✓ install-ios');
   await ctx.close();
 }
 

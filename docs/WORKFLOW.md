@@ -41,7 +41,8 @@ match reality. Nothing large is coded before its feature spec exists.
 | `npm run format` | Prettier write |
 | `npm run test` / `npm run test:watch` | Vitest |
 | `npm run feature <slug>` | Scaffold a new feature spec from the template |
-| `npm run shots` | Regenerate `docs/screenshots/*.png` with Playwright (needs `npm run dev` running) |
+| `npm run shots` | Regenerate `docs/screenshots/*.png` with Playwright (needs a server running; `SHOT_BASE` to point it — use the `preview` build for PWA shots) |
+| `npm run icons` | Rasterise `public/*.png` app icons from the jar mark |
 
 ## Working with Claude
 

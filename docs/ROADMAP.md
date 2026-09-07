@@ -26,7 +26,7 @@ offline, on-device.
 | 0007 | Accumulation jars — target, progress, withdrawal events | [features/0007-accumulation-and-withdrawals.md](features/0007-accumulation-and-withdrawals.md) | ✅ |
 | 0008 | CSV import of transactions | [features/0008-csv-import.md](features/0008-csv-import.md) | ✅ |
 | 0009 | Deterministic projections (goal date for accumulation jars) | [features/0009-projections.md](features/0009-projections.md) | ✅ |
-| 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ⬜ |
+| 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ✅ |
 
 ## Phase 2 — Multi-currency & richer jars
 
@@ -61,3 +61,4 @@ offline, on-device.
 - **2026-09-07** — **0007 ✅ accumulation jars & withdrawals** — new jar detail page (`/jars/:id`; editor moved to `/jars/:id/edit`) with balance/target, an SVG balance-over-time chart, inline withdraw form + withdrawals list; flow jars get a simpler spent-vs-cap detail. `emitReprojection('withdrawal')` wired for 0009. 28 tests green. **Remaining: 0008 CSV import, 0009 projections, 0010 PWA polish.**
 - **2026-09-07** — **0009 ✅ deterministic projections** — `projectGoalDate` (EMA + least-squares, confidence, null cases), a projection card on the accumulation jar detail with a method toggle, a real `/insights` page, and a coach-note that calls out the biggest goal-date shift after a change. 43 tests green. **Remaining: 0008 CSV import, 0010 PWA polish.**
 - **2026-09-07** — **0008 ✅ CSV import** — client-side parser (quotes / delimiters / BOM), a 3-step wizard (file → column mapping with auto-guess → preview with per-row jar), `sourceType: "csv_import"`, and session dedupe on a content hash. 56 tests green. **Only 0010 PWA polish left for Phase 1.**
+- **2026-09-07** — **0010 ✅ PWA polish** — rasterised icon set (192/512/maskable/apple), full manifest, Workbox precache + font runtime-cache, an offline bar, a `beforeinstallprompt` card + iOS "Add to Home Screen" nudge, and `navigator.storage.persist()` on boot surfaced in Settings. Storage-eviction spike documented. **Phase 1 (core ledger, single user) is complete — all of 0001–0010 done.**

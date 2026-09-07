@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { requestPersistence } from '@/lib/storagePersistence';
 import { getDatabase, type JarInDatabase } from './database';
 
 const DbContext = createContext<JarInDatabase | null>(null);
@@ -16,6 +17,11 @@ export function RxdbProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+    void requestPersistence().then((s) => {
+      if (import.meta.env.DEV) {
+        console.info('[storage] persisted:', s.persisted, 'supported:', s.supported);
+      }
+    });
     getDatabase()
       .then((database) => {
         if (active) setDb(database);

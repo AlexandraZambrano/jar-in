@@ -1,0 +1,51 @@
+.card {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  margin: 0 auto;
+  max-width: 440px;
+  border: 4px solid var(--sticker-border-color, #fff);
+  box-shadow:
+    var(--shadow-sticker),
+    0 0 0 var(--sticker-ring-width) var(--sticker-ring);
+  background-clip: padding-box;
+  background: var(--note-paper);
+  color: var(--note-ink);
+  border-radius: var(--sticker-radius);
+  padding: 14px 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: rotate(calc(var(--tilt-unit) * -1));
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-title);
+}
+.body {
+  font-size: var(--step-caption);
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--step-caption);
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+}

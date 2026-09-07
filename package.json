@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "check": "tsc --noEmit && eslint . && vitest run",
     "feature": "node scripts/new-feature.mjs",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

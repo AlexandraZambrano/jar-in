@@ -5,6 +5,50 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0010: PWA polish · Phase 1 complete
+
+**Added**
+
+- `scripts/icons.mjs` (`npm run icons`) → `public/icon-192.png`,
+  `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png`
+  rasterised from the jar mark.
+- `vite.config.ts`: full manifest (4 icons, `display: standalone`,
+  `orientation`, `scope`, `categories`); Workbox `navigateFallback` +
+  `cleanupOutdatedCaches` + Google-Fonts `runtimeCaching`. `index.html`:
+  apple-touch-icon + apple / mobile-web-app meta.
+- `OfflineBadge` — sticky bar driven by `online`/`offline`.
+- `InstallPrompt` — `beforeinstallprompt` card on Chromium, manual
+  "Share → Add to Home Screen" nudge on iOS Safari; hidden when
+  standalone / dismissed (`localStorage`), also on `appinstalled`.
+- `lib/storagePersistence.requestPersistence()` on boot; Settings "This
+  device" card shows installed vs. browser, persistent vs. best-effort,
+  and usage/quota.
+- `src/db/constants.ts` — `DEFAULT_CURRENCY` moved out of `seed.ts` (keeps
+  it dynamic-import-only; drops a Vite chunking warning).
+
+**Verified**
+
+- `npm run build` emits `sw.js` + `manifest.webmanifest` + all icons
+  (precache 16 entries). `npm run check` green — 56 tests.
+- Playwright vs. `npm run preview`: SW registers + controls; **offline
+  reload renders the full app** (`navigator.onLine === false`), offline
+  bar shows and clears; iOS nudge appears under an iPhone UA and its
+  dismissal persists. Screenshots added (`offline`, `install-ios`).
+
+**Storage-eviction spike:** see
+`docs/features/0010-pwa-polish.md` — `navigator.storage.persist()` is the
+lever on Chromium; on iOS the real protection is home-screen install
+(nudge shipped); durable answer is Phase 5 sync. On-device iOS
+verification is still a TODO (no device here).
+
+**Next**
+
+- Phase 1 is done. Phase 2: multi-currency rollup + FX table +
+  period-allocation engine. (Or Phase 3 AI, Phase 4 household — see
+  ROADMAP.)
+
+---
+
 ## 2026-09-07 — Feature 0008: CSV import
 
 **Added**

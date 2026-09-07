@@ -37,16 +37,16 @@ Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · visual design:
 
 ## Where it's at
 
-**Phase 1 (core ledger, single user) — in progress.** Working today:
-on-device database, the full jar editor (name, %, type, colour, icon,
-pattern, sub-categories), wallets, multiple income sources, a keypad
-transaction-entry flow with a grouped history, and a dashboard whose
-allocation donut and per-jar progress are computed live from real data —
-accumulation-jar goals with a balance-over-time chart, withdrawal
-events, deterministic goal-date projections (with a coach note that
-flags when a goal moves), and CSV import — plus the theme /
-accessibility modes. Next: PWA polish (icons, install prompt, offline
-UX). Track it in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**Phase 1 (core ledger, single user) — complete.** Working today: an
+on-device database; the full jar editor (name, %, type, colour, icon,
+pattern, sub-categories); wallets and multiple income sources; a keypad
+transaction-entry flow with a grouped history and CSV import;
+accumulation-jar goals with a balance-over-time chart, withdrawal events
+and deterministic goal-date projections (with a coach note that flags
+when a goal moves); an installable, fully-offline PWA; and the theme /
+accessibility modes. Next: Phase 2 — multi-currency rollup and a
+period-allocation engine. Track it in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Screens
 
@@ -76,6 +76,10 @@ compose — dark + colour-blind-safe + calm is a valid combination):
 | CSV import — column mapping | CSV import — preview |
 |---|---|
 | ![CSV import column mapping](docs/screenshots/import-csv-map.png) | ![CSV import preview](docs/screenshots/import-csv-preview.png) |
+
+| Offline (service worker) | iOS install nudge |
+|---|---|
+| ![Running offline](docs/screenshots/offline.png) | ![Add to Home Screen nudge](docs/screenshots/install-ios.png) |
 
 | Wallets | Income sources |
 |---|---|

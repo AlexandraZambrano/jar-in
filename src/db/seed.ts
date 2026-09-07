@@ -3,8 +3,7 @@ import { newId } from '@/lib/id';
 import { addMonths, nowISO, todayISO } from '@/lib/date';
 import { toMinor } from '@/lib/money';
 import { DEFAULT_JAR_TEMPLATE } from '@/features/jars/jarTemplate';
-
-export const DEFAULT_CURRENCY = 'EUR';
+import { DEFAULT_CURRENCY } from './constants';
 
 /** First-run data so the app has something to show. Runs only when there are
  *  no jars yet — a second load never re-seeds. */

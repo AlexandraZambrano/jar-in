@@ -8,7 +8,7 @@ import { Icon, JAR_ICON_NAMES, type IconName } from '@/components/icons';
 import { fromMinor, parseAmountInput, toMinor } from '@/lib/money';
 import { newId } from '@/lib/id';
 import { move } from '@/lib/reorder';
-import { DEFAULT_CURRENCY } from '@/db/seed';
+import { DEFAULT_CURRENCY } from '@/db/constants';
 import { JAR_PALETTE, PATTERN_CSS, resolveJarColors } from './jarPalette';
 import { createJar, deleteJar, updateJar } from './jarsRepo';
 import {
