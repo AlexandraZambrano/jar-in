@@ -14,18 +14,23 @@ match reality. Nothing large is coded before its feature spec exists.
 2. BUILD    implement against the acceptance criteria only
             keep docs/DATA-MODEL.md in sync if schemas change
 
-3. CHECK    npm run check                 → tsc + eslint + vitest, must be green
+3. TEST     unit (Vitest) for every pure function — required
+            e2e (Playwright, e2e/*.spec.ts) for the headline flow —
+              required if the feature adds a route or a mutation
 
-4. SEE      npm run dev  (or npm run preview)
+4. CHECK    npm run check                 → tsc + eslint + vitest, must be green
+            npm run e2e                   → Playwright, must be green
+
+5. SEE      npm run dev  (or npm run preview)
             open the app, verify the acceptance criteria by hand
             npm run shots  → refreshes docs/screenshots/*.png
             reference them in README.md and the feature spec
 
-5. RECORD   set the feature's Status + Changelog in its spec file
+6. RECORD   set the feature's Status + Changelog in its spec file
             tick the row in docs/ROADMAP.md
             add a dated line to docs/PROGRESS.md
 
-6. COMMIT   git commit -m "feat(<slug>): <what changed>"
+7. COMMIT   git commit -m "feat(<slug>): <what changed>"
             (never add a Co-Authored-By / contributor trailer for Claude)
 ```
 
@@ -37,9 +42,10 @@ match reality. Nothing large is coded before its feature spec exists.
 | `npm run build` | `tsc -b` + `vite build` (production PWA bundle) |
 | `npm run preview` | Serve the production build locally |
 | `npm run check` | `tsc --noEmit` + `eslint .` + `vitest run` — the gate |
+| `npm run e2e` / `npm run e2e:ui` | Playwright specs in `e2e/` against a preview build (config starts the server); `:ui` is the watch UI |
 | `npm run lint` / `npm run lint:fix` | ESLint (+ `jsx-a11y`) |
 | `npm run format` | Prettier write |
-| `npm run test` / `npm run test:watch` | Vitest |
+| `npm run test` / `npm run test:watch` | Vitest (unit, `src/` only) |
 | `npm run feature <slug>` | Scaffold a new feature spec from the template |
 | `npm run shots` | Regenerate `docs/screenshots/*.png` with Playwright (needs a server running; `SHOT_BASE` to point it — use the `preview` build for PWA shots) |
 | `npm run icons` | Rasterise `public/*.png` app icons from the jar mark |
@@ -67,6 +73,7 @@ Project slash commands (in `.claude/commands/`):
 
 - [ ] Every acceptance criterion in the spec is met and hand-verified
 - [ ] `npm run check` is green
+- [ ] `npm run e2e` is green; a new route or mutation has an `e2e/` spec
 - [ ] Schemas & `docs/DATA-MODEL.md` agree
 - [ ] Screenshot(s) captured and linked
 - [ ] Feature spec Status = ✅ with a dated Changelog entry

@@ -45,7 +45,9 @@ transaction-entry flow with a grouped history and CSV import;
 accumulation-jar goals with a balance-over-time chart, withdrawal events
 and deterministic goal-date projections (with a coach note that flags
 when a goal moves); a one-time app tour; an installable, fully-offline
-PWA; and the theme / accessibility modes. Next: a CI pipeline, then
+PWA; and the theme / accessibility modes. A GitHub Actions pipeline
+gates every push on typecheck + lint + unit tests + a Playwright e2e
+suite + a clean build ([`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)). Next:
 Phase 2 (multi-currency rollup and a period-allocation engine). Track it
 in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
@@ -211,8 +213,9 @@ npm run dev        # http://localhost:5173
 |---|---|
 | `npm run dev` | dev server |
 | `npm run build` | production PWA bundle |
-| `npm run check` | typecheck + lint + tests (the gate) |
-| `npm run test` / `npm run test:watch` | tests |
+| `npm run check` | typecheck + lint + unit tests (the gate) |
+| `npm run e2e` | Playwright end-to-end suite (builds + serves the app) |
+| `npm run test` / `npm run test:watch` | unit tests |
 | `npm run feature <slug>` | scaffold a new feature spec |
 | `npm run shots` | regenerate screenshots (needs `npm run dev` running) |
 

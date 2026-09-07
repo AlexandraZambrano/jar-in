@@ -5,6 +5,53 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — CI pipeline + e2e suite (from DEPLOYMENT.md)
+
+Built the automated gate that was spec'd in `DEPLOYMENT.md`.
+
+**Added**
+
+- `playwright.config.ts` — `@playwright/test` (pinned to match
+  `playwright`), Chromium, portrait-phone viewport, `webServer` runs
+  `npm run build && npm run preview` on `:4173`, `reuseExistingServer`
+  off in CI.
+- `npm run e2e` / `npm run e2e:ui` scripts.
+- `e2e/` suite (9 tests, all green):
+  - `helpers.ts` — `seedStarter()` (walks the "skip" onboarding path so a
+    fresh IndexedDB has data), `trackNativeDialogs()` (fails on any
+    `alert`/`confirm`/`prompt`).
+  - `onboarding.spec.ts` — new user → `/welcome`; skip seeds a starter
+    set; questionnaire → proposal → jars sum to 100%.
+  - `jars.spec.ts` — create a jar; **flow-jar opening balance
+    round-trips a save** (locks the bug fixed earlier today); delete a
+    jar with no native dialog.
+  - `transactions.spec.ts` — keypad add → history; delete with no native
+    dialog.
+  - `preferences.spec.ts` — theme + a11y toggles mirror onto `<html>`
+    and persist a reload.
+- `.github/workflows/ci.yml` — Node 24; `check + build` job (uploads
+  `dist/`) then `e2e` job (`needs: check`, Playwright browser cache
+  keyed on version, uploads `playwright-report/`). Triggers on push to
+  any branch + PRs to `main`; `concurrency` cancels superseded runs.
+- ADR `decisions/0005-ci-and-deployment.md`.
+
+**Changed**
+
+- `vite.config.ts` — `test.include` scoped to `src/**` so Vitest no
+  longer tries to run the Playwright specs.
+- `eslint.config.js` / `tsconfig.json` — cover `e2e/` +
+  `playwright.config.ts`.
+- `WORKFLOW.md`, `ARCHITECTURE.md`, `README.md`, `ROADMAP.md`,
+  `DEPLOYMENT.md` (now "as built").
+
+**Verified**
+
+- `npm run check` green — 79 unit tests, eslint clean.
+- `npm run e2e` green — 9/9 in ~10s against the preview build.
+
+**Next / needs access (user):** push to GitHub so Actions runs; Coolify
+app; `main` branch protection.
+
 ## 2026-09-07 — 0012 follow-up: flow-jar opening balance + consistent info line
 
 Two issues from a second pass over the shipped fix pack.

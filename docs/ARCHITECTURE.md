@@ -101,10 +101,26 @@ Icons are rasterised from the jar mark by `scripts/icons.mjs`
 (`npm run icons`). The SW is inactive under `npm run dev` — test PWA
 behaviour with `npm run build && npm run preview`.
 
-## Testing
+## Testing & CI
 
-Vitest + Testing Library (jsdom). The compute/selector functions carry
-the heaviest coverage since they hold the money math.
+Vitest + Testing Library (jsdom) for unit tests (`src/**`) — the
+compute/selector functions carry the heaviest coverage since they hold
+the money math. Playwright (`e2e/**`, `@playwright/test`) drives the
+headline user flows against a `vite preview` production build; a feature
+that adds a route or a mutation ships an `e2e/` spec.
+
+CI is GitHub Actions (`.github/workflows/ci.yml`), Node 24: a
+`check + build` job (`npm run check` + `npm run build`, uploads `dist/`)
+then an `e2e` job. The same commands are the local gate — see
+[`DEPLOYMENT.md`](DEPLOYMENT.md) and ADR
+[`decisions/0005-ci-and-deployment.md`](decisions/0005-ci-and-deployment.md).
+
+## Deploy
+
+Static PWA bundle (`dist/`) served by Coolify on Hetzner from a green
+`main`, SPA fallback to `index.html`, hashed assets long-cached and
+`index.html` / `sw.js` / `manifest.webmanifest` `no-cache`. No backend
+in v1. Details in [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Not in v1 (but designed around)
 

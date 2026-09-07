@@ -29,7 +29,7 @@ offline, on-device.
 | 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ✅ |
 | 0011 | First-run onboarding (questionnaire → proposed jars) & app tour | [features/0011-first-run-onboarding.md](features/0011-first-run-onboarding.md) | ✅ |
 | 0012 | Fix pack — inline delete confirm, growth-jar monthly figure, Calm/CVD colour behaviour, flow-jar opening balance | [features/0012-fix-pack.md](features/0012-fix-pack.md) | ✅ |
-| — | CI/CD pipeline — lint + typecheck + tests gate before deploy | [DEPLOYMENT.md](DEPLOYMENT.md) | ⬜ (proposed) |
+| — | CI/CD pipeline — lint + typecheck + unit + e2e gate before deploy | [DEPLOYMENT.md](DEPLOYMENT.md) | ✅ (CI + e2e built; Coolify/branch-protection need server + repo access) |
 
 ## Phase 2 — Multi-currency & richer jars
 
