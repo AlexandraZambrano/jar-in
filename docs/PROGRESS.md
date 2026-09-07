@@ -5,6 +5,26 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Fix: flow-jar running-balance chart rendered broken
+
+Reported: the Essentials (flow) jar detail showed a flat line pinned to
+the bottom of an empty box instead of a chart.
+
+- **Cause 1:** a transaction dated before the jar's `startedAt` produced
+  an x-coordinate outside the `[start, ref]` window, blowing out the
+  SVG scale. `buildBalanceTimeline` now clamps every plotted event date
+  into `[start, ref]`; the delta still applies in full so the final
+  point still equals `flowRunningBalanceMinor` / `accumulationBalanceMinor`.
+- **Cause 2:** no empty state for a jar younger than one monthly cycle
+  (no accrual points, ~1-day span). New `hasTimelineHistory(points)`
+  gates the chart — otherwise `BalanceTimeline` shows "This chart fills
+  in as the months pass…" and `JarDetailPage` hides the "Running
+  balance · …/mo credited" caption.
+- Accumulation jars (seed back-dates them 5 months) render unchanged —
+  `jar-detail-accumulation.png` is byte-identical.
+- +2 unit tests (81 total). `npm run check` + `npm run e2e` green.
+  `jar-detail-flow.png` refreshed.
+
 ## 2026-09-07 — CI pipeline + e2e suite (from DEPLOYMENT.md)
 
 Built the automated gate that was spec'd in `DEPLOYMENT.md`.

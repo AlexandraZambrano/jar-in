@@ -174,3 +174,16 @@ headline is unchanged; DATA-MODEL.md compute notes updated.
     `N% of cap · €Y/mo[ · over cap]`, mirroring growth's
     `N% to goal · +€Z/mo`.
   - 79 unit tests green.
+- **2026-09-07 (follow-up 2)** — the flow-jar running-balance chart
+  rendered as a broken flat line for a jar with under a month of
+  history: a transaction dated before `startedAt` (imported history)
+  pushed an x-coordinate outside `[start, ref]` and blew out the
+  scale, and there was no empty state for "younger than one cycle".
+  Fixes: `buildBalanceTimeline` clamps every plotted event date into
+  `[start, ref]` (delta unchanged, so the final balance still matches
+  the deterministic figure); `hasTimelineHistory(points)` gates the
+  chart — no accrual point and a window under 28 days shows
+  "This chart fills in as the months pass…" instead, and
+  `JarDetailPage` drops the "Running balance · …/mo credited" caption
+  in that state. Accumulation jars (back-dated in the seed) are
+  unaffected. +2 unit tests → 81 green.

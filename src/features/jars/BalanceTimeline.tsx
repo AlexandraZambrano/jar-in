@@ -1,5 +1,5 @@
 import { formatMoney } from '@/lib/money';
-import type { TimelinePoint } from './timeline';
+import { hasTimelineHistory, type TimelinePoint } from './timeline';
 import styles from './BalanceTimeline.module.css';
 
 interface Props {
@@ -18,10 +18,14 @@ export function BalanceTimeline({ points, targetMinor, currency, locale }: Props
   const minT = t(points[0].date);
   const maxT = t(points[points.length - 1].date);
 
-  if (maxT <= minT) {
+  // A balance-over-time chart of a monthly series needs at least a month of
+  // span to say anything. Below that (a jar created this cycle), the headline
+  // figure and the transaction list already tell the story.
+  if (!hasTimelineHistory(points)) {
     return (
       <p className={styles.empty}>
-        The timeline fills in as months pass. First contribution posts next cycle.
+        This chart fills in as the months pass — the first monthly credit posts
+        next cycle.
       </p>
     );
   }

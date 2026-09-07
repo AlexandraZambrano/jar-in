@@ -149,7 +149,11 @@ derived on read:
   into a point series: the monthly credit accrues at each whole-month
   boundary, each `DebitEvent` (a withdrawal, or a transaction for a flow
   jar) subtracts on its date, and the final point equals the balance
-  above.
+  above. Event dates are clamped into `[startedAt, ref]` for plotting
+  (a debit predating the jar stacks on the start point) so the x-scale
+  can't be blown out; the delta is unchanged. `hasTimelineHistory()` is
+  false — and the chart shows a "fills in as months pass" note instead —
+  until an accrual has posted or the window is ≥ 28 days.
 - **Plan health** = `Σ jar.percentage`. `= 100` balanced; `≠ 100`
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
 - **Projections** (`projections/project.ts`) are fully derived — nothing

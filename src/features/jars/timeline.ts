@@ -30,7 +30,12 @@ export function buildBalanceTimeline(
   ref: string = todayISO(),
 ): TimelinePoint[] {
   const start = jar.startedAt.slice(0, 10);
-  const months = wholeMonthsBetween(start, ref);
+  const refDay = ref.slice(0, 10);
+  const months = wholeMonthsBetween(start, refDay);
+  // Keep every plotted date inside [start, ref] so a debit that predates the
+  // jar (e.g. imported history) or lands after `ref` can't blow out the x-axis.
+  // The delta still applies in full, so the final balance is unchanged.
+  const clampDay = (d: string) => (d < start ? start : d > refDay ? refDay : d);
 
   type Ev = { date: string; delta: number; kind: 'accrual' | 'debit'; label?: string; seq: number };
   const events: Ev[] = [];
@@ -40,7 +45,7 @@ export function buildBalanceTimeline(
   }
   for (const d of debits) {
     events.push({
-      date: d.date.slice(0, 10),
+      date: clampDay(d.date.slice(0, 10)),
       delta: -d.amountMinor,
       kind: 'debit',
       label: d.label?.trim() || 'Debit',
@@ -63,10 +68,19 @@ export function buildBalanceTimeline(
       deltaMinor: e.delta,
     });
   }
-  points.push({ date: ref, balanceMinor: Math.max(0, running), kind: 'now', deltaMinor: 0 });
+  points.push({ date: refDay, balanceMinor: Math.max(0, running), kind: 'now', deltaMinor: 0 });
   return points;
 }
 
 export function debitPoints(points: TimelinePoint[]): TimelinePoint[] {
   return points.filter((p) => p.kind === 'debit');
+}
+
+/** True once the series spans enough time to be worth charting — at least one
+ *  monthly credit has posted, or the window is a month or wider. Matches the
+ *  empty-state guard in `BalanceTimeline`. */
+export function hasTimelineHistory(points: TimelinePoint[]): boolean {
+  if (points.some((p) => p.kind === 'accrual')) return true;
+  const t = (iso: string) => new Date(iso + 'T00:00:00Z').getTime();
+  return t(points[points.length - 1].date) - t(points[0].date) >= 28 * 86_400_000;
 }

@@ -26,7 +26,7 @@ import {
 } from '@/features/projections/project';
 import { monthLabel } from '@/lib/date';
 import { resolveJarColors } from './jarPalette';
-import { buildBalanceTimeline } from './timeline';
+import { buildBalanceTimeline, hasTimelineHistory } from './timeline';
 import { BalanceTimeline } from './BalanceTimeline';
 import { createWithdrawal, deleteWithdrawal } from './withdrawalsRepo';
 import styles from './JarDetailPage.module.css';
@@ -102,6 +102,7 @@ export function JarDetailPage() {
             label: t.note || 'Spent',
           })),
         );
+  const timelineHasHistory = hasTimelineHistory(timelinePoints);
 
   async function submitWithdrawal() {
     const parsed = parseAmountInput(amount);
@@ -160,9 +161,14 @@ export function JarDetailPage() {
           />
 
           <Sticker tiltSeed={2} className={styles.chartCard} style={{ color: fill }}>
-            <div className="muted" style={{ fontSize: 'var(--step-caption)', marginBottom: 4 }}>
-              Running balance · +{money(planned)}/mo credited, spending drawn down
-            </div>
+            {timelineHasHistory && (
+              <div
+                className="muted"
+                style={{ fontSize: 'var(--step-caption)', marginBottom: 4 }}
+              >
+                Running balance · +{money(planned)}/mo credited, spending drawn down
+              </div>
+            )}
             <BalanceTimeline
               points={timelinePoints}
               targetMinor={null}

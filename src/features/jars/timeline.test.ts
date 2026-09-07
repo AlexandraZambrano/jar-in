@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Jar } from '@/db/schemas';
-import { buildBalanceTimeline, debitPoints, type DebitEvent } from './timeline';
+import {
+  buildBalanceTimeline,
+  debitPoints,
+  hasTimelineHistory,
+  type DebitEvent,
+} from './timeline';
 import { accumulationBalanceMinor } from '@/features/dashboard/compute';
 
 const ts = '2026-01-01T00:00:00.000Z';
@@ -68,6 +73,38 @@ describe('buildBalanceTimeline', () => {
     expect(pts.at(-1)!.balanceMinor).toBe(
       accumulationBalanceMinor(j, 10000, withdrawals, '2026-05-01'),
     );
+  });
+
+  it('clamps event dates into [start, ref] without changing the final balance', () => {
+    const j = jar({ type: 'flow', openingBalanceMinor: 20000, startedAt: '2026-09-06' });
+    const pts = buildBalanceTimeline(
+      j,
+      93280,
+      [
+        { amountMinor: 45000, date: '2026-09-01', label: 'Rent' }, // before start
+        { amountMinor: 17500, date: '2026-09-07', label: 'Groceries' },
+      ],
+      '2026-09-07',
+    );
+    // every plotted date sits inside the window
+    expect(pts.every((p) => p.date >= '2026-09-06' && p.date <= '2026-09-07')).toBe(true);
+    // pre-start debit is pulled onto the start day, delta still applied
+    expect(pts.filter((p) => p.date === '2026-09-06').length).toBe(2);
+    // opening 200 − 450 − 175 → clamped to 0
+    expect(pts.at(-1)!.balanceMinor).toBe(0);
+  });
+
+  it('hasTimelineHistory is false for a jar younger than a month, true once a credit posts', () => {
+    const fresh = buildBalanceTimeline(
+      jar({ type: 'flow', startedAt: '2026-09-06' }),
+      93280,
+      [{ amountMinor: 17500, date: '2026-09-07' }],
+      '2026-09-07',
+    );
+    expect(hasTimelineHistory(fresh)).toBe(false);
+
+    const aged = buildBalanceTimeline(jar({}), 36000, [], '2026-05-01');
+    expect(hasTimelineHistory(aged)).toBe(true);
   });
 
   it('clamps displayed balance at 0', () => {
