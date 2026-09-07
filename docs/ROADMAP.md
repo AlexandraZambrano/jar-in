@@ -27,6 +27,9 @@ offline, on-device.
 | 0008 | CSV import of transactions | [features/0008-csv-import.md](features/0008-csv-import.md) | ✅ |
 | 0009 | Deterministic projections (goal date for accumulation jars) | [features/0009-projections.md](features/0009-projections.md) | ✅ |
 | 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ✅ |
+| 0011 | First-run onboarding (questionnaire → proposed jars) & app tour | [features/0011-first-run-onboarding.md](features/0011-first-run-onboarding.md) | ⬜ (spec in review) |
+| 0012 | Fix pack — inline delete confirm, growth-jar monthly figure, Calm/CVD colour behaviour, flow-jar opening balance | [features/0012-fix-pack.md](features/0012-fix-pack.md) | ⬜ (spec in review) |
+| — | CI/CD pipeline — lint + typecheck + tests gate before deploy | [DEPLOYMENT.md](DEPLOYMENT.md) | ⬜ (proposed) |
 
 ## Phase 2 — Multi-currency & richer jars
 
