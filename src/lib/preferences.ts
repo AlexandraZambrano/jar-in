@@ -9,13 +9,22 @@ export type A11yFlag = 'calm' | 'cvd' | 'patterns' | 'motion-ok';
 
 const A11Y_FLAGS: readonly A11yFlag[] = ['calm', 'cvd', 'patterns', 'motion-ok'];
 
+export type OnboardingState = 'pending' | 'done' | 'skipped';
+
 export interface Preferences {
   theme: ThemePref;
   a11y: A11yFlag[];
+  onboarding: OnboardingState;
+  tourDone: boolean;
 }
 
 const KEY = 'jarin.preferences';
-const DEFAULTS: Preferences = { theme: 'system', a11y: [] };
+const DEFAULTS: Preferences = {
+  theme: 'system',
+  a11y: [],
+  onboarding: 'pending',
+  tourDone: false,
+};
 
 const listeners = new Set<() => void>();
 let current: Preferences = load();
@@ -30,6 +39,11 @@ function load(): Preferences {
       a11y: Array.isArray(parsed.a11y)
         ? parsed.a11y.filter((f): f is A11yFlag => (A11Y_FLAGS as string[]).includes(f))
         : [],
+      onboarding:
+        parsed.onboarding === 'done' || parsed.onboarding === 'skipped'
+          ? parsed.onboarding
+          : 'pending',
+      tourDone: parsed.tourDone === true,
     };
   } catch {
     return { ...DEFAULTS };

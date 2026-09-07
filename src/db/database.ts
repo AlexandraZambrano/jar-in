@@ -71,11 +71,8 @@ async function create(): Promise<JarInDatabase> {
     fxRates: { schema: fxRateSchema },
   });
 
-  // Seed exactly once, as part of the memoised singleton init — this is immune
-  // to React StrictMode's double-invoked effects.
-  const { seedIfEmpty } = await import('./seed');
-  await seedIfEmpty(db);
-
+  // No automatic seed — first-run onboarding (feature 0011) decides whether to
+  // build jars from the questionnaire or drop in the example set.
   return db;
 }
 

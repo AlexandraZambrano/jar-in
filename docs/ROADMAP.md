@@ -27,7 +27,7 @@ offline, on-device.
 | 0008 | CSV import of transactions | [features/0008-csv-import.md](features/0008-csv-import.md) | ✅ |
 | 0009 | Deterministic projections (goal date for accumulation jars) | [features/0009-projections.md](features/0009-projections.md) | ✅ |
 | 0010 | PWA polish — install prompt, offline UX, iOS storage nudge | [features/0010-pwa-polish.md](features/0010-pwa-polish.md) | ✅ |
-| 0011 | First-run onboarding (questionnaire → proposed jars) & app tour | [features/0011-first-run-onboarding.md](features/0011-first-run-onboarding.md) | ⬜ (spec in review) |
+| 0011 | First-run onboarding (questionnaire → proposed jars) & app tour | [features/0011-first-run-onboarding.md](features/0011-first-run-onboarding.md) | ✅ |
 | 0012 | Fix pack — inline delete confirm, growth-jar monthly figure, Calm/CVD colour behaviour, flow-jar opening balance | [features/0012-fix-pack.md](features/0012-fix-pack.md) | ✅ |
 | — | CI/CD pipeline — lint + typecheck + tests gate before deploy | [DEPLOYMENT.md](DEPLOYMENT.md) | ⬜ (proposed) |
 
@@ -66,3 +66,5 @@ offline, on-device.
 - **2026-09-07** — **0008 ✅ CSV import** — client-side parser (quotes / delimiters / BOM), a 3-step wizard (file → column mapping with auto-guess → preview with per-row jar), `sourceType: "csv_import"`, and session dedupe on a content hash. 56 tests green. **Only 0010 PWA polish left for Phase 1.**
 - **2026-09-07** — **0010 ✅ PWA polish** — rasterised icon set (192/512/maskable/apple), full manifest, Workbox precache + font runtime-cache, an offline bar, a `beforeinstallprompt` card + iOS "Add to Home Screen" nudge, and `navigator.storage.persist()` on boot surfaced in Settings. Storage-eviction spike documented. **Phase 1 (core ledger, single user) is complete — all of 0001–0010 done.**
 - **2026-09-07** — Post-review: drafted **0011** (first-run onboarding & tour) and a **DEPLOYMENT.md** CI proposal. Shipped **0012 ✅ fix pack** — the P0 "delete does nothing" (`window.confirm` was being suppressed → `ConfirmButton`), growth jars now show `€Z/mo` on Home, Calm mode mutes jar colours, colour-blind mode no longer forces patterns (now a separate "Add patterns to jars" toggle), flow jars can take an opening balance and get a running-balance chart. 60 tests green.
+- **2026-09-07** — Fixed money/date formatting to a fixed English `APP_LOCALE` (was following the device locale). 61 tests.
+- **2026-09-07** — **0011 ✅ first-run onboarding & tour** — the automatic seed is gone; a new user gets a 6-question flow → a deterministic jar proposal (`proposeJars`, always 100%) → an editable review that creates their wallet/income/jars, then a 4-step coach-mark tour. "Skip — use a starter set" seeds the old example data. 79 tests green. **Next: CI pipeline from DEPLOYMENT.md.**

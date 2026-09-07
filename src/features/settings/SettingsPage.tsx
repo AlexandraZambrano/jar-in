@@ -6,9 +6,13 @@ import {
   toggleA11y,
   type ThemePref,
 } from '@/lib/preferences';
+import { useNavigate } from 'react-router-dom';
 import { Sticker } from '@/components/Sticker';
+import { ConfirmButton } from '@/components/ConfirmButton';
+import { useDb } from '@/db/RxdbProvider';
 import { isStandalone } from '@/lib/pwa';
 import { requestPersistence, type StorageStatus } from '@/lib/storagePersistence';
+import { wipeForRestart } from '@/features/onboarding/onboardingRepo';
 
 const THEMES: { value: ThemePref; label: string }[] = [
   { value: 'system', label: 'Match device' },
@@ -26,10 +30,18 @@ function formatBytes(n?: number): string {
 
 export function SettingsPage() {
   const prefs = usePreferences();
+  const db = useDb();
+  const navigate = useNavigate();
   const [storage, setStorage] = useState<StorageStatus | null>(null);
   useEffect(() => {
     void requestPersistence().then(setStorage);
   }, []);
+
+  async function startOver() {
+    await wipeForRestart(db);
+    setPreferences({ onboarding: 'pending', tourDone: false });
+    navigate('/welcome', { replace: true });
+  }
 
   return (
     <div className="screen">
@@ -147,6 +159,30 @@ export function SettingsPage() {
             <Link to="/transactions" className="link-btn">
               All transactions
             </Link>
+          </div>
+        </fieldset>
+      </Sticker>
+
+      <Sticker tiltSeed={3} style={{ padding: 16 }}>
+        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend className="eyebrow" style={{ marginBottom: 8 }}>
+            Setup
+          </legend>
+          <div className="stack" style={{ gap: 12 }}>
+            <button
+              type="button"
+              className="link-btn"
+              style={{ textAlign: 'left' }}
+              onClick={() => setPreferences({ tourDone: false })}
+            >
+              Replay the tour
+            </button>
+            <ConfirmButton
+              label="Start setup over"
+              confirmLabel="Yes — clear my jars and re-run setup"
+              caption="Deletes your jars and sub-categories and re-runs the questions. Transactions are kept and shown as “Unassigned”."
+              onConfirm={startOver}
+            />
           </div>
         </fieldset>
       </Sticker>

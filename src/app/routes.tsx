@@ -13,9 +13,11 @@ import { TransactionsPage } from '@/features/transactions/TransactionsPage';
 import { ImportCsvPage } from '@/features/transactions/ImportCsvPage';
 import { InsightsPage } from '@/features/insights/InsightsPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
+import { WelcomePage } from '@/features/onboarding/WelcomePage';
 import { PlaceholderPage } from '@/features/misc/PlaceholderPage';
 
 export const router = createBrowserRouter([
+  { path: '/welcome', element: <WelcomePage /> },
   {
     path: '/',
     element: <AppShell />,

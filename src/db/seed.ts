@@ -5,9 +5,9 @@ import { toMinor } from '@/lib/money';
 import { DEFAULT_JAR_TEMPLATE } from '@/features/jars/jarTemplate';
 import { DEFAULT_CURRENCY } from './constants';
 
-/** First-run data so the app has something to show. Runs only when there are
- *  no jars yet — a second load never re-seeds. */
-export async function seedIfEmpty(db: JarInDatabase): Promise<void> {
+/** The example data set — used by the "skip, just set me up with defaults"
+ *  path in first-run onboarding (feature 0011). No-ops if jars already exist. */
+export async function seedExampleData(db: JarInDatabase): Promise<void> {
   const jarCount = await db.jars.count().exec();
   if (jarCount > 0) return;
 

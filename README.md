@@ -37,18 +37,23 @@ Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · visual design:
 
 ## Where it's at
 
-**Phase 1 (core ledger, single user) — complete.** Working today: an
+**Phase 1 (core ledger, single user) — complete.** Working today: a
+first-run questionnaire that proposes a jar split from your income; an
 on-device database; the full jar editor (name, %, type, colour, icon,
 pattern, sub-categories); wallets and multiple income sources; a keypad
 transaction-entry flow with a grouped history and CSV import;
 accumulation-jar goals with a balance-over-time chart, withdrawal events
 and deterministic goal-date projections (with a coach note that flags
-when a goal moves); an installable, fully-offline PWA; and the theme /
-accessibility modes. Next: Phase 2 — multi-currency rollup and a
-period-allocation engine. Track it in
-[`docs/ROADMAP.md`](docs/ROADMAP.md).
+when a goal moves); a one-time app tour; an installable, fully-offline
+PWA; and the theme / accessibility modes. Next: a CI pipeline, then
+Phase 2 (multi-currency rollup and a period-allocation engine). Track it
+in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Screens
+
+| First run — questions | First run — proposed jars | App tour |
+|---|---|---|
+| ![Onboarding questionnaire](docs/screenshots/welcome-questions.png) | ![Proposed jars review](docs/screenshots/welcome-review.png) | ![App tour](docs/screenshots/tour.png) |
 
 The "Sticker Sheet" look, and its three accessibility modes (which
 compose — dark + colour-blind-safe + calm is a valid combination):

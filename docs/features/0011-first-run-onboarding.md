@@ -1,7 +1,7 @@
 # 0011 — First-run onboarding & app tour
 
-- **Status:** ⬜ not started (spec in review)
-- **Phase:** 1 (deterministic version now; AI-worded version folds in at Phase 3)
+- **Status:** ✅ done (deterministic version; AI-worded version folds in at Phase 3)
+- **Phase:** 1
 - **Spec refs:** SPEC.md §8.1, §4; DESIGN-STICKER-SHEET.md §3, §5
 - **Depends on:** 0001, 0002
 
@@ -119,3 +119,35 @@ function stays as the deterministic fallback / validator.
 ## Changelog
 
 - **2026-09-07** — spec created; in review.
+- **2026-09-07** — approved and built. All criteria met.
+  - The automatic empty-DB seed is **removed** from `getDatabase()`.
+    `seed.ts` now exports `seedExampleData()`, called only by the
+    "skip — use a starter set" path.
+  - `firstRunDecision()` (pure, tested) drives three outcomes from
+    `{ ready, jarCount, onboarding, tourDone }`: **welcome** (→
+    `/welcome`), **tour**, **migrate** (a pre-existing user with jars but
+    no recorded onboarding → mark done, so they also get the tour once).
+    `AppShell` reads it via `useOnboardingState`.
+  - `/welcome` is a top-level route (no bottom nav). Phases:
+    intro → `Questionnaire` (6 steps, each skippable, progress bar) →
+    `ReviewProposal`.
+  - `proposeJars(answers)` — pure, 15 tests. Sums to exactly 100 for
+    every answer combination (no answers, high rent, debt, saves-a-lot,
+    zero income); Essentials clamped 35–60% and clawed back to a 25%
+    floor to keep Joy ≥ 5%; **added a Joy soft-cap of 20%** so the
+    proposal doesn't suggest a huge fun-money jar — the surplus goes to
+    the safe fund. Accumulation jars always get a positive target.
+  - Review stages the jars in memory; "Looks good, start"
+    (`buildFromProposal`) creates a wallet, an income source (if income
+    given) and the jars + sub-categories, then sets `onboarding: 'done'`.
+  - `components/Tour.tsx` — hand-rolled coach-marks (spotlight via a
+    huge box-shadow + a paper-note tooltip), 4 steps keyed to
+    `data-tour="add|jars|insights|more"` on the bottom nav. Esc / scrim
+    / "Skip" all end it; `tourDone` is persisted. Honours reduced motion.
+  - Settings → **Setup**: "Replay the tour" and "Start setup over"
+    (a `ConfirmButton` that wipes jars/sub-categories and returns to
+    `/welcome`; transactions are kept as "Unassigned").
+  - New `preferences` keys `onboarding` / `tourDone`. No schema change.
+  - 79 unit tests green. Verified end-to-end (Playwright): empty DB →
+    `/welcome` → questionnaire → "Adds up to 100%" → jars created → tour
+    → reload stays on `/`; the skip path seeds the example set.

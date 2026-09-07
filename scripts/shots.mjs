@@ -12,11 +12,13 @@ await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 
 function ctxOpts(pref) {
+  // shots never want the tour popping up (except the dedicated tour shot)
+  const stored = pref ? { tourDone: true, ...pref } : null;
   return {
     viewport: { width: 390, height: 1600 },
     deviceScaleFactor: 2,
     locale: LOCALE,
-    ...(pref
+    ...(stored
       ? {
           storageState: {
             cookies: [],
@@ -24,7 +26,7 @@ function ctxOpts(pref) {
               {
                 origin: BASE,
                 localStorage: [
-                  { name: 'jarin.preferences', value: JSON.stringify(pref) },
+                  { name: 'jarin.preferences', value: JSON.stringify(stored) },
                 ],
               },
             ],
@@ -32,6 +34,25 @@ function ctxOpts(pref) {
         }
       : {}),
   };
+}
+
+/** The DB no longer auto-seeds — walk the "skip, use a starter set" onboarding
+ *  path so a context has data, and suppress the tour that would follow. */
+async function seedViaSkip(page) {
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
+  const skip = page.getByRole('button', { name: 'Skip — use a starter set' });
+  if (await skip.count()) {
+    await skip.click();
+    await page.waitForURL((u) => u.pathname === '/');
+    await page.waitForTimeout(700);
+  }
+  await page.evaluate(() => {
+    const p = JSON.parse(localStorage.getItem('jarin.preferences') || '{}');
+    localStorage.setItem('jarin.preferences', JSON.stringify({ ...p, tourDone: true }));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(400);
 }
 
 // ── Per-mode dashboard (seed data only) ──
@@ -53,6 +74,7 @@ const MODES = [
 for (const s of MODES) {
   const ctx = await browser.newContext(ctxOpts(s.pref));
   const page = await ctx.newPage();
+  await seedViaSkip(page);
   await page.goto(BASE + (s.path ?? '/jars'), { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
   if (s.open) {
@@ -70,10 +92,56 @@ for (const s of MODES) {
   await ctx.close();
 }
 
+// ── Onboarding (fresh, un-seeded contexts) ──
+{
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 1600 },
+    deviceScaleFactor: 2,
+    locale: LOCALE,
+  });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${OUT}/welcome-intro.png` });
+  console.log('  ✓ welcome-intro');
+
+  await page.getByRole('button', { name: 'Answer a few questions' }).click();
+  await page.waitForTimeout(300);
+  await page.getByRole('textbox', { name: /take-home pay/ }).fill('2400');
+  await page.screenshot({ path: `${OUT}/welcome-questions.png` });
+  console.log('  ✓ welcome-questions');
+
+  const step = async (label, v) => {
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.waitForTimeout(150);
+    if (v != null) await page.getByRole('textbox', { name: label }).fill(v);
+  };
+  await step(/rent or mortgage/, '800');
+  await step(/utilities/, '150');
+  await step(/groceries/, '300');
+  await page.getByRole('button', { name: 'Next' }).click(); // -> debt
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Next' }).click(); // -> saves
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Not yet' }).click();
+  await page.getByRole('button', { name: 'See my jars' }).click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${OUT}/welcome-review.png` });
+  console.log('  ✓ welcome-review');
+
+  await page.getByRole('button', { name: 'Looks good, start' }).click();
+  await page.waitForURL((u) => u.pathname === '/');
+  await page.waitForTimeout(900);
+  await page.screenshot({ path: `${OUT}/tour.png` });
+  console.log('  ✓ tour');
+  await ctx.close();
+}
+
 // ── Populated context: add a couple of transactions, then shoot the money screens ──
 {
-  const ctx = await browser.newContext(ctxOpts(null));
+  const ctx = await browser.newContext(ctxOpts({ theme: 'light', a11y: [] }));
   const page = await ctx.newPage();
+  await seedViaSkip(page);
 
   await page.goto(`${BASE}/add`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
@@ -153,6 +221,7 @@ for (const s of MODES) {
 {
   const ctx = await browser.newContext(ctxOpts({ theme: 'light', a11y: [] }));
   const page = await ctx.newPage();
+  await seedViaSkip(page);
   await page.goto(`${BASE}/`, { waitUntil: 'load' });
   await page.waitForSelector('nav[aria-label="Primary"]', { timeout: 15000 });
   await page
@@ -169,6 +238,7 @@ for (const s of MODES) {
 {
   const ctx = await browser.newContext({ ...devices['iPhone 13'] });
   const page = await ctx.newPage();
+  await seedViaSkip(page);
   await page.goto(`${BASE}/`, { waitUntil: 'load' });
   await page.waitForTimeout(2200); // the iOS nudge appears after ~1.5s
   await page.screenshot({ path: `${OUT}/install-ios.png` });

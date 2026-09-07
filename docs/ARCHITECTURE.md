@@ -55,8 +55,11 @@ src/
 
 ## Data flow
 
-1. `RxdbProvider` creates the RxDB singleton on first mount, runs `seed()`
-   if the DB is empty, then renders the app.
+1. `RxdbProvider` creates the RxDB singleton on first mount, then renders
+   the app. There is **no automatic seed** — `firstRunDecision()`
+   (feature 0011) sends a new user to `/welcome`, where they either
+   answer the questionnaire (jars built from their answers) or pick
+   "skip" (`seedExampleData()` drops in the example set).
 2. Screens call `useRxQuery(() => db.jars.find(), [])` etc. — a thin hook
    that subscribes to an `RxQuery.$` observable and returns plain JSON.
    No global store; RxDB *is* the store.

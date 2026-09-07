@@ -173,8 +173,12 @@ the change in this file's history below and in `PROGRESS.md`.
   `maxLength`). Numeric fields like `order` are **not** indexed — lists
   are sorted in memory (datasets are small). RxDB rejects sorting by a
   non-indexed field, so components must `.sort()` after the query.
-- Seeding runs once inside `getDatabase()`'s memoised init, not in a
-  React effect (StrictMode double-invokes effects).
+- No automatic seed. `firstRunDecision()` routes a new user to
+  `/welcome`; jars are created either from the questionnaire
+  (`buildFromProposal`) or from `seedExampleData()` (the "skip" path).
+- `localStorage` `jarin.preferences` also holds
+  `onboarding: 'pending' | 'done' | 'skipped'` and `tourDone: boolean`
+  (feature 0011). Not in RxDB.
 - Deleting a `subCategories` row patches `subCategoryId` to `null` on any
   `transactions` that referenced it (they report at jar level instead).
   Sub-category `order` is kept contiguous (0..n) by the reorder repo.

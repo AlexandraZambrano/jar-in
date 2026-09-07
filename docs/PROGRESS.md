@@ -5,6 +5,43 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0011: first-run onboarding & app tour
+
+**Added**
+
+- `getDatabase()` no longer auto-seeds. `seed.ts` → `seedExampleData()`,
+  used only by the "skip" path.
+- `firstRunDecision()` (pure) → `welcome` / `tour` / `migrate`;
+  `useOnboardingState` hook; `AppShell` redirects to `/welcome` and
+  renders `<Tour>` accordingly, and migrates pre-existing users
+  (jars but no recorded onboarding) to `onboarding: 'done'`.
+- `/welcome` (top-level route): intro → `Questionnaire` (6 skippable
+  steps) → `ReviewProposal` (editable, staged in memory).
+- `proposeJars(answers)` — pure, deterministic, 15 tests; always sums to
+  100; Joy soft-capped at 20% with the surplus going to the safe fund.
+- `buildFromProposal` creates the wallet + income + jars + sub-categories
+  on confirm; `wipeForRestart` for "Start setup over".
+- `components/Tour.tsx` — hand-rolled coach-marks over `data-tour`
+  targets on the bottom nav (4 steps). `preferences` gains
+  `onboarding` / `tourDone`.
+- Settings → **Setup**: "Replay the tour", "Start setup over".
+
+**Verified**
+
+- `npm run check` green — 79 unit tests (proposeJars ×15,
+  firstRunDecision ×4).
+- End-to-end (Playwright): empty DB → `/welcome` → questionnaire →
+  "Adds up to 100%" → jars created → tour → reload stays on `/`; skip
+  path seeds the example set. `shots.mjs` updated to walk the skip path
+  for contexts that need data; new `welcome-*` / `tour` screenshots.
+
+**Next**
+
+- CI pipeline (`.github/workflows/ci.yml` + an `e2e/` suite) per
+  `docs/DEPLOYMENT.md`.
+
+---
+
 ## 2026-09-07 — Locale: force the whole app to English
 
 Reported: "On track to reach 2100,00 € around abril de 2027" — mixed
