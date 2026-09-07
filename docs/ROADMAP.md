@@ -18,7 +18,7 @@ offline, on-device.
 | # | Feature | Spec | Status |
 |---|---|---|---|
 | 0001 | Foundation & app shell (Vite/React/TS, PWA, RxDB, tokens, routing, theme + a11y modes) | [features/0001-foundation-and-shell.md](features/0001-foundation-and-shell.md) | ✅ |
-| 0002 | Jars — default template, create/edit (name, %, type, colour, icon, pattern, sub-categories) | [features/0002-jars.md](features/0002-jars.md) | 🟡 |
+| 0002 | Jars — default template, create/edit (name, %, type, colour, icon, pattern, sub-categories) | [features/0002-jars.md](features/0002-jars.md) | ✅ |
 | 0003 | Wallets — personal wallets with currency | [features/0003-wallets.md](features/0003-wallets.md) | ✅ |
 | 0004 | Income sources — multiple, editable, drive jar funding | [features/0004-income-sources.md](features/0004-income-sources.md) | ✅ |
 | 0005 | Transactions — manual entry + list, tagged to jar/sub-category | [features/0005-transactions.md](features/0005-transactions.md) | ✅ |
@@ -57,3 +57,4 @@ offline, on-device.
 - **2026-09-06** — Repo bootstrapped. Product spec + Sticker Sheet design spec in place. Started Phase 1: foundation scaffold, DB schemas, design tokens, app shell, dashboard + jars first slice, theme/a11y settings.
 - **2026-09-06** — First slice landed and verified (`npm run check` green, browser-checked, screenshots captured). **0001 ✅**, **0006 ✅**, 0002 🟡 (sub-category editor + delete-guard still to do). README + `npm run shots` added.
 - **2026-09-06** — **0003 ✅ wallets**, **0004 ✅ income sources**, **0005 ✅ transactions** (keypad add flow + grouped list + jar filter + Unassigned/reassign). Shared `CurrencyPicker` + `reprojection` hook added. 0002 delete-guard (crit. 6) done; only its sub-category editor remains. Dashboard "spent" + donut now driven by real transactions. 20 unit tests green; flows verified end-to-end with Playwright.
+- **2026-09-07** — **0002 ✅ complete** — sub-category editor (add/rename/reorder/remove) on the jar screen, working for both existing and not-yet-created jars. 23 unit tests green. **Phase 1 status: 0001–0006 all ✅; remaining 0007–0010.**

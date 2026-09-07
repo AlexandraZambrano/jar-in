@@ -3,12 +3,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
-import type { Jar, JarPattern, JarType } from '@/db/schemas';
+import type { Jar, JarPattern, JarType, SubCategory } from '@/db/schemas';
 import { Icon, JAR_ICON_NAMES, type IconName } from '@/components/icons';
 import { fromMinor, parseAmountInput, toMinor } from '@/lib/money';
+import { newId } from '@/lib/id';
+import { move } from '@/lib/reorder';
 import { DEFAULT_CURRENCY } from '@/db/seed';
 import { JAR_PALETTE, PATTERN_CSS, resolveJarColors } from './jarPalette';
 import { createJar, deleteJar, updateJar } from './jarsRepo';
+import {
+  addSubCategory,
+  deleteSubCategory,
+  moveSubCategory,
+  renameSubCategory,
+} from './subCategoriesRepo';
+import { SubCategoryEditor, type SubItem } from './SubCategoryEditor';
 
 const PATTERNS: JarPattern[] = ['solid', 'hatch', 'dots', 'hline', 'grid', 'vline'];
 
@@ -20,6 +29,7 @@ export function JarEditPage() {
   const cvd = usePreferences().a11y.includes('cvd');
 
   const { data: jars } = useRxQuery<Jar>(() => db.jars.find(), [db]);
+  const { data: allSubs } = useRxQuery<SubCategory>(() => db.subCategories.find(), [db]);
   const existing = useMemo(() => jars.find((j) => j.id === id), [jars, id]);
 
   const [name, setName] = useState('');
@@ -31,8 +41,20 @@ export function JarEditPage() {
   const [targetInput, setTargetInput] = useState('');
   const [openingInput, setOpeningInput] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Staged sub-categories for a not-yet-created jar.
+  const [pendingSubs, setPendingSubs] = useState<SubItem[]>([]);
 
   const currency = existing?.currency ?? jars[0]?.currency ?? DEFAULT_CURRENCY;
+
+  const dbSubs = useMemo(
+    () =>
+      allSubs
+        .filter((s) => s.jarId === id)
+        .sort((a, b) => a.order - b.order)
+        .map((s) => ({ id: s.id, name: s.name })),
+    [allSubs, id],
+  );
+  const subItems: SubItem[] = isNew ? pendingSubs : dbSubs;
 
   useEffect(() => {
     if (!existing) return;
@@ -53,6 +75,27 @@ export function JarEditPage() {
         : '',
     );
   }, [existing]);
+
+  const sub = {
+    add: (n: string) => {
+      if (isNew) setPendingSubs((p) => [...p, { id: newId(), name: n.trim() }]);
+      else void addSubCategory(db, id!, n);
+    },
+    rename: (sid: string, n: string) => {
+      if (isNew)
+        setPendingSubs((p) => p.map((s) => (s.id === sid ? { ...s, name: n } : s)));
+      else void renameSubCategory(db, sid, n);
+    },
+    move: (sid: string, dir: 'up' | 'down') => {
+      if (isNew)
+        setPendingSubs((p) => move(p, p.findIndex((s) => s.id === sid), dir));
+      else void moveSubCategory(db, id!, sid, dir);
+    },
+    remove: (sid: string) => {
+      if (isNew) setPendingSubs((p) => p.filter((s) => s.id !== sid));
+      else void deleteSubCategory(db, sid);
+    },
+  };
 
   function validate(): Record<string, string> {
     const e: Record<string, string> = {};
@@ -90,8 +133,12 @@ export function JarEditPage() {
           : 0,
     };
 
-    if (isNew) await createJar(db, input);
-    else await updateJar(db, id!, input);
+    if (isNew) {
+      const jarId = await createJar(db, input);
+      for (const s of pendingSubs) await addSubCategory(db, jarId, s.name);
+    } else {
+      await updateJar(db, id!, input);
+    }
     navigate('/jars');
   }
 
@@ -113,11 +160,7 @@ export function JarEditPage() {
       <form className="stack" onSubmit={onSubmit}>
         <label className="field">
           Name
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
           {errors.name && <span className="error">{errors.name}</span>}
         </label>
 
@@ -227,6 +270,14 @@ export function JarEditPage() {
             ))}
           </div>
         </div>
+
+        <SubCategoryEditor
+          items={subItems}
+          onAdd={sub.add}
+          onRename={sub.rename}
+          onMove={sub.move}
+          onRemove={sub.remove}
+        />
 
         <button className="btn" type="submit">
           {isNew ? 'Create jar' : 'Save changes'}

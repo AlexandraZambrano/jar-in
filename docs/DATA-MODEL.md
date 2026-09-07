@@ -159,6 +159,9 @@ the change in this file's history below and in `PROGRESS.md`.
   non-indexed field, so components must `.sort()` after the query.
 - Seeding runs once inside `getDatabase()`'s memoised init, not in a
   React effect (StrictMode double-invokes effects).
+- Deleting a `subCategories` row patches `subCategoryId` to `null` on any
+  `transactions` that referenced it (they report at jar level instead).
+  Sub-category `order` is kept contiguous (0..n) by the reorder repo.
 - Dev builds wrap the Dexie storage in `wrappedValidateAjvStorage`
   (RxDB dev-mode requires a top-level validator).
 

@@ -5,6 +5,34 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0002 completed: sub-category editor
+
+**Added**
+
+- `SubCategoryEditor` component + `subCategoriesRepo` (add / rename /
+  move up-down / remove) wired into the jar screen. Two modes:
+  existing jar → live DB edits; new jar → staged local list,
+  bulk-created after the jar is saved.
+- Deleting a sub-category nulls `subCategoryId` on any tagged
+  transactions (fall back to jar level).
+- `src/lib/reorder.ts` — pure `move(list, index, dir)`, unit-tested.
+
+**Verified**
+
+- `npm run check` green — 23 unit tests.
+- End-to-end (Playwright): on Essentials, add "Internet", rename
+  "Rent"→"Housing", move "Internet" up, remove "Water" — all persist
+  across reload and show in the `/add` sub-category dropdown. New-jar
+  path: staged "Flights"/"Hotels" persisted after Create. Screenshot
+  refreshed (`jar-edit-light` now opens a seeded jar).
+
+**Next**
+
+- 0007 accumulation-jar detail + withdrawal events, 0009 projections
+  (consumes the reprojection hook), 0008 CSV import, 0010 PWA polish.
+
+---
+
 ## 2026-09-06 — Features 0003 wallets, 0004 income, 0005 transactions
 
 **Added**

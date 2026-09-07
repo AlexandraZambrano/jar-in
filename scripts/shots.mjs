@@ -41,7 +41,12 @@ const MODES = [
   { name: 'dashboard-cvd', path: '/', pref: { theme: 'light', a11y: ['cvd'] } },
   { name: 'dashboard-calm', path: '/', pref: { theme: 'light', a11y: ['calm'] } },
   { name: 'jars-light', path: '/jars', pref: { theme: 'light', a11y: [] } },
-  { name: 'jar-edit-light', path: '/jars/new', pref: { theme: 'light', a11y: [] } },
+  {
+    name: 'jar-edit-light',
+    path: '/jars',
+    open: 'Essentials', // click into a seeded jar so the sub-category editor is populated
+    pref: { theme: 'light', a11y: [] },
+  },
   { name: 'settings-light', path: '/settings', pref: { theme: 'light', a11y: [] } },
 ];
 
@@ -50,6 +55,11 @@ for (const s of MODES) {
   const page = await ctx.newPage();
   await page.goto(BASE + s.path, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
+  if (s.open) {
+    await page.getByRole('link', { name: new RegExp(s.open) }).click();
+    await page.waitForURL(/\/jars\/[^/]+$/);
+    await page.waitForTimeout(600);
+  }
   await page.screenshot({ path: `${OUT}/${s.name}.png` });
   console.log('  ✓', s.name);
   await ctx.close();

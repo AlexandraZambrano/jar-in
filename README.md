@@ -38,12 +38,12 @@ Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · visual design:
 ## Where it's at
 
 **Phase 1 (core ledger, single user) — in progress.** Working today:
-on-device database, the default jar template with create/edit, wallets,
-multiple income sources, a keypad transaction-entry flow with a grouped
-history, and a dashboard whose allocation donut and per-jar progress are
-computed live from real data — plus the theme / accessibility modes.
-Next: sub-category editing, accumulation-jar goals + withdrawals, and
-deterministic projections. Track it in
+on-device database, the full jar editor (name, %, type, colour, icon,
+pattern, sub-categories), wallets, multiple income sources, a keypad
+transaction-entry flow with a grouped history, and a dashboard whose
+allocation donut and per-jar progress are computed live from real data —
+plus the theme / accessibility modes. Next: accumulation-jar goals +
+withdrawal events, and deterministic projections. Track it in
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Screens

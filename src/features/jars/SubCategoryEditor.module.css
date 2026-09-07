@@ -1,0 +1,50 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row input {
+  flex-grow: 1;
+  min-width: 0;
+  font-family: var(--font-text);
+  font-size: var(--step-body);
+  color: var(--ink);
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+}
+.iconBtn:disabled {
+  opacity: 0.35;
+}
+.remove {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.add {
+  margin-top: 2px;
+}
+.hint {
+  font-size: var(--step-caption);
+  color: var(--ink-soft);
+}
