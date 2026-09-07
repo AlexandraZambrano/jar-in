@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { useRxQuery } from '@/lib/useRxQuery';
@@ -9,6 +9,12 @@ import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schem
 import { CoachNote } from '@/components/CoachNote';
 import { AllocationDonut, type DonutSegment } from '@/components/AllocationDonut';
 import { resolveJarColors } from '@/features/jars/jarPalette';
+import { monthlyBalanceSeries, projectGoalDate } from '@/features/projections/project';
+import {
+  getNotableChange,
+  recordProjections,
+  type NotableChange,
+} from '@/features/projections/tracker';
 import type { IconName } from '@/components/icons';
 import { JarCard } from './JarCard';
 import {
@@ -45,6 +51,33 @@ export function DashboardPage() {
     () => jars.map((jar) => computeJar(jar, inc.minor, txns, withdrawals)),
     [jars, inc.minor, txns, withdrawals],
   );
+
+  // Deterministic goal-date projections for accumulation jars. Recomputed
+  // synchronously whenever the underlying data changes (income / percentage /
+  // withdrawal edits all flow through here via RxDB + emitReprojection) — no
+  // scheduled job. The tracker remembers the previous run so the coach note can
+  // call out a notable shift.
+  const projSnaps = useMemo(
+    () =>
+      computed
+        .filter((c) => c.jar.type === 'accumulation')
+        .map((c) => {
+          const series = monthlyBalanceSeries(c.jar, c.plannedMinor, withdrawals);
+          const p = projectGoalDate(c.jar, series, c.plannedMinor);
+          return {
+            jarId: c.jar.id,
+            jarName: c.jar.name,
+            monthsRemaining: p ? p.monthsRemaining : null,
+          };
+        }),
+    [computed, withdrawals],
+  );
+
+  const [notable, setNotable] = useState<NotableChange | null>(() => getNotableChange());
+  useEffect(() => {
+    recordProjections(projSnaps);
+    setNotable(getNotableChange());
+  }, [projSnaps]);
 
   const segments: DonutSegment[] = computed.map((c) => {
     const { fill, on } = resolveJarColors(c.jar.color, cvd);
@@ -101,7 +134,7 @@ export function DashboardPage() {
         />
       )}
 
-      <CoachNote>{coachMessage(health)}</CoachNote>
+      <CoachNote>{coachMessage(health, notable)}</CoachNote>
 
       <div className="screen-head">
         <h2 className="screen-title" style={{ fontSize: 'var(--step-title)' }}>

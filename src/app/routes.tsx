@@ -10,6 +10,7 @@ import { IncomePage } from '@/features/income/IncomePage';
 import { IncomeEditPage } from '@/features/income/IncomeEditPage';
 import { TransactionFormPage } from '@/features/transactions/TransactionFormPage';
 import { TransactionsPage } from '@/features/transactions/TransactionsPage';
+import { InsightsPage } from '@/features/insights/InsightsPage';
 import { SettingsPage } from '@/features/settings/SettingsPage';
 import { PlaceholderPage } from '@/features/misc/PlaceholderPage';
 
@@ -32,10 +33,7 @@ export const router = createBrowserRouter([
       { path: 'add', element: <TransactionFormPage /> },
       { path: 'transactions', element: <TransactionsPage /> },
       { path: 'transactions/:id', element: <TransactionFormPage /> },
-      {
-        path: 'insights',
-        element: <PlaceholderPage title="Insights" feature="0009-projections" />,
-      },
+      { path: 'insights', element: <InsightsPage /> },
       { path: 'settings', element: <SettingsPage /> },
       {
         path: '*',

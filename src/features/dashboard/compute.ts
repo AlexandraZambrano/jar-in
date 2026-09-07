@@ -117,7 +117,17 @@ export function computeJar(
   };
 }
 
-export function coachMessage(health: PlanHealth): string {
+export interface CoachNotable {
+  jarName: string;
+  deltaMonths: number;
+  direction: 'sooner' | 'later';
+}
+
+export function coachMessage(health: PlanHealth, notable?: CoachNotable | null): string {
+  if (notable) {
+    const m = `${notable.deltaMonths} month${notable.deltaMonths === 1 ? '' : 's'}`;
+    return `${notable.jarName} now reaches its goal ${m} ${notable.direction} than before.`;
+  }
   if (health.balanced) return 'Your plan is balanced at 100%. Nice.';
   if (health.delta > 0) {
     return `Your jars add up to ${health.total}% — that's ${health.delta}% over. Trim a jar, or the extra won't be funded.`;

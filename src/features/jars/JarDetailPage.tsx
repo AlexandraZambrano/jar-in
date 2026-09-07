@@ -16,6 +16,13 @@ import { Icon, type IconName } from '@/components/icons';
 import { formatMoney, parseAmountInput, toMinor } from '@/lib/money';
 import { isSameMonth, nowISO, todayISO } from '@/lib/date';
 import { computeJar, jarPlannedMinor, monthlyIncome } from '@/features/dashboard/compute';
+import {
+  methodLabel,
+  monthlyBalanceSeries,
+  projectGoalDate,
+  type ProjectionMethod,
+} from '@/features/projections/project';
+import { monthLabel } from '@/lib/date';
 import { resolveJarColors } from './jarPalette';
 import { buildBalanceTimeline } from './timeline';
 import { BalanceTimeline } from './BalanceTimeline';
@@ -45,6 +52,8 @@ export function JarDetailPage() {
   const [date, setDate] = useState(todayISO());
   const [reason, setReason] = useState('');
   const [formError, setFormError] = useState('');
+  // null = let projectGoalDate pick (regression once there's ≥4 months of history)
+  const [projMethod, setProjMethod] = useState<ProjectionMethod | null>(null);
 
   const inc = useMemo(() => monthlyIncome(income), [income]);
 
@@ -184,6 +193,60 @@ export function JarDetailPage() {
               locale={locale}
             />
           </Sticker>
+
+          {(() => {
+            const series = monthlyBalanceSeries(jar, planned, withdrawals);
+            const p = projectGoalDate(
+              jar,
+              series,
+              planned,
+              projMethod ? { method: projMethod } : undefined,
+            );
+            if (c.goalMet) return null;
+            return (
+              <Sticker tiltSeed={4} style={{ padding: 14 }}>
+                {p ? (
+                  <div className="stack" style={{ gap: 6 }}>
+                    <span>
+                      On track to reach {money(jar.targetAmountMinor ?? 0)} around{' '}
+                      <strong>{monthLabel(p.date, locale)}</strong> —{' '}
+                      {Math.max(1, Math.ceil(p.monthsRemaining))} months away.
+                    </span>
+                    <span className="muted" style={{ fontSize: 'var(--step-caption)' }}>
+                      via {methodLabel(p.method)} · {p.confidence} confidence ·{' '}
+                      {money(p.ratePerMonthMinor)}/mo
+                    </span>
+                    <div className="picker-row" style={{ marginTop: 2 }}>
+                      {(['ema', 'regression'] as ProjectionMethod[]).map((m) => {
+                        const active = (projMethod ?? p.method) === m;
+                        return (
+                          <button
+                            key={m}
+                            type="button"
+                            className="chip"
+                            aria-pressed={active}
+                            style={
+                              active
+                                ? { background: 'var(--ink)', color: 'var(--bg)' }
+                                : undefined
+                            }
+                            onClick={() => setProjMethod(m)}
+                          >
+                            {methodLabel(m)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <span className="muted">
+                    Not growing right now — add income or ease off withdrawals to get a
+                    goal date.
+                  </span>
+                )}
+              </Sticker>
+            );
+          })()}
 
           {!showForm ? (
             <button

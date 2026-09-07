@@ -5,6 +5,42 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-07 — Feature 0009: deterministic projections
+
+**Added**
+
+- `features/projections/project.ts` — `projectGoalDate` (two methods:
+  EMA of monthly deltas, least-squares slope; confidence from the
+  deltas' coefficient of variation; falls back to the planned
+  contribution with <2 deltas; returns `null` for no-target / met /
+  not-growing). `monthlyBalanceSeries` builds the month-end series
+  (endpoint == `accumulationBalanceMinor`). Pure, tz-safe.
+- `features/projections/tracker.ts` — module-level memory of each jar's
+  last `monthsRemaining`; the dashboard records after each recompute and
+  the coach note surfaces the single biggest shift. Guarded so a
+  transient loading render can't wipe the baseline.
+- Jar detail (accumulation): projection card with method / confidence /
+  rate and a moving-average ⇄ trend-line toggle.
+- `/insights` is now a real page listing each accumulation jar's
+  projected goal date (was a placeholder).
+- Recompute is synchronous with the underlying data change (RxDB +
+  `emitReprojection` from income / % / withdrawal edits); no job.
+
+**Verified**
+
+- `npm run check` green — 43 unit tests (project ×9, tracker ×6).
+- End-to-end (Playwright): Safe fund projects Apr 2027 / 7 months
+  (trend line, high confidence); a €900 withdrawal moves it to Dec 2027
+  / 15 months, the EMA view flips to "not growing", and returning to the
+  dashboard shows "Safe fund now reaches its goal 8 months later than
+  before". Screenshots refreshed (+ `insights-light`).
+
+**Next**
+
+- 0008 CSV import, 0010 PWA polish → Phase 1 done.
+
+---
+
 ## 2026-09-07 — Feature 0007: accumulation jars & withdrawal events
 
 **Added**

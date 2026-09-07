@@ -145,6 +145,11 @@ derived on read:
   equals the balance above.
 - **Plan health** = `Σ jar.percentage`. `= 100` balanced; `≠ 100`
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
+- **Projections** (`projections/project.ts`) are fully derived — nothing
+  is stored. `projectGoalDate` runs EMA / least-squares over
+  `monthlyBalanceSeries` to estimate a goal date; the previous run is
+  kept in memory (`projections/tracker.ts`) only so the coach note can
+  name the biggest shift. Recompute is synchronous with the data change.
 
 ## Schema versioning
 

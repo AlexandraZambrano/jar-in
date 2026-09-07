@@ -46,6 +46,7 @@ const MODES = [
   { name: 'jar-detail-accumulation', open: 'Safe fund', pref: { theme: 'light', a11y: [] } },
   // from the jar detail, follow Edit → the editor (sub-category section is populated)
   { name: 'jar-edit-light', open: 'Essentials', thenEdit: true, pref: { theme: 'light', a11y: [] } },
+  { name: 'insights-light', path: '/insights', pref: { theme: 'light', a11y: [] } },
   { name: 'settings-light', path: '/settings', pref: { theme: 'light', a11y: [] } },
 ];
 
