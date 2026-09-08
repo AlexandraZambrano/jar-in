@@ -96,8 +96,8 @@ feature branch → PR → CI (check + e2e) green → review → merge to main
 
 ## Needs infrastructure / repo access (user)
 
-- [ ] Push the repo to GitHub so Actions runs (`ci.yml` is already in
-      place; no remote is configured yet).
+- [x] Push the repo to GitHub — `github.com/AlexandraZambrano/jar-in`
+      (`main` + `feat/v1-phase-1`). Actions runs `ci.yml` on every push.
 - [ ] Coolify app configured (server access).
 - [ ] Branch protection on `main`: both CI jobs green before merge, no
       direct pushes (repo admin).
