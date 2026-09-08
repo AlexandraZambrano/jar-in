@@ -7,15 +7,43 @@ import { mkdir } from 'node:fs/promises';
 const BASE = process.env.SHOT_BASE || 'http://localhost:5173';
 const OUT = 'docs/screenshots';
 const LOCALE = 'en-IE'; // English + euro, matches the EUR seed
+const WIDTH = 390;
 
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
+
+/** Resize the viewport to the current screen's real content height, then shoot.
+ *  The app's scroll lives inside `.app-main` (not the document), so `fullPage`
+ *  can't see it — instead we measure and fit, which trims the long empty
+ *  dotted runway a fixed tall viewport leaves below short screens. */
+async function shoot(page, name) {
+  // Reset to a short baseline first so layout reflows to a narrow column and
+  // `.screen` reports its real content box (the `.app-main` scroller is
+  // `flex:1` and would otherwise inflate to the viewport).
+  await page.setViewportSize({ width: WIDTH, height: 640 });
+  await page.waitForTimeout(120);
+  const h = await page.evaluate(() => {
+    const nav = document.querySelector('nav[aria-label="Primary"]');
+    const navH = nav ? nav.getBoundingClientRect().height : 0;
+    // The feature screen (shell routes) or the onboarding page (top-level routes).
+    const content =
+      document.querySelector('.app-main .screen') ||
+      document.querySelector('[class*="page"]');
+    if (content) return Math.ceil(content.getBoundingClientRect().bottom + navH + 8);
+    return Math.ceil(document.documentElement.scrollHeight);
+  });
+  const height = Math.max(520, Math.min(h, 3200));
+  await page.setViewportSize({ width: WIDTH, height });
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: `${OUT}/${name}.png` });
+  console.log('  ✓', name);
+}
 
 function ctxOpts(pref) {
   // shots never want the tour popping up (except the dedicated tour shot)
   const stored = pref ? { tourDone: true, ...pref } : null;
   return {
-    viewport: { width: 390, height: 1600 },
+    viewport: { width: WIDTH, height: 844 },
     deviceScaleFactor: 2,
     locale: LOCALE,
     ...(stored
@@ -87,29 +115,26 @@ for (const s of MODES) {
       await page.waitForTimeout(500);
     }
   }
-  await page.screenshot({ path: `${OUT}/${s.name}.png` });
-  console.log('  ✓', s.name);
+  await shoot(page, s.name);
   await ctx.close();
 }
 
 // ── Onboarding (fresh, un-seeded contexts) ──
 {
   const ctx = await browser.newContext({
-    viewport: { width: 390, height: 1600 },
+    viewport: { width: WIDTH, height: 844 },
     deviceScaleFactor: 2,
     locale: LOCALE,
   });
   const page = await ctx.newPage();
   await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(700);
-  await page.screenshot({ path: `${OUT}/welcome-intro.png` });
-  console.log('  ✓ welcome-intro');
+  await shoot(page, 'welcome-intro');
 
   await page.getByRole('button', { name: 'Answer a few questions' }).click();
   await page.waitForTimeout(300);
   await page.getByRole('textbox', { name: /take-home pay/ }).fill('2400');
-  await page.screenshot({ path: `${OUT}/welcome-questions.png` });
-  console.log('  ✓ welcome-questions');
+  await shoot(page, 'welcome-questions');
 
   const step = async (label, v) => {
     await page.getByRole('button', { name: 'Next' }).click();
@@ -126,14 +151,12 @@ for (const s of MODES) {
   await page.getByRole('button', { name: 'Not yet' }).click();
   await page.getByRole('button', { name: 'See my jars' }).click();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${OUT}/welcome-review.png` });
-  console.log('  ✓ welcome-review');
+  await shoot(page, 'welcome-review');
 
   await page.getByRole('button', { name: 'Looks good, start' }).click();
   await page.waitForURL((u) => u.pathname === '/');
   await page.waitForTimeout(900);
-  await page.screenshot({ path: `${OUT}/tour.png` });
-  console.log('  ✓ tour');
+  await shoot(page, 'tour');
   await ctx.close();
 }
 
@@ -172,8 +195,7 @@ for (const s of MODES) {
   await page.getByLabel('Reason (optional)').fill('Car repair');
   await page.getByRole('button', { name: 'Record withdrawal' }).click();
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `${OUT}/jar-detail-withdrawal.png` });
-  console.log('  ✓ jar-detail-withdrawal');
+  await shoot(page, 'jar-detail-withdrawal');
 
   // CSV import wizard: column-mapping + preview steps
   {
@@ -194,12 +216,10 @@ for (const s of MODES) {
       buffer: Buffer.from(csv),
     });
     await page.waitForTimeout(500);
-    await page.screenshot({ path: `${OUT}/import-csv-map.png` });
-    console.log('  ✓ import-csv-map');
+    await shoot(page, 'import-csv-map');
     await page.getByRole('button', { name: 'Preview', exact: true }).click();
     await page.waitForTimeout(500);
-    await page.screenshot({ path: `${OUT}/import-csv-preview.png` });
-    console.log('  ✓ import-csv-preview');
+    await shoot(page, 'import-csv-preview');
   }
 
   for (const [name, path] of [
@@ -211,8 +231,7 @@ for (const s of MODES) {
   ]) {
     await page.goto(BASE + path, { waitUntil: 'networkidle' });
     await page.waitForTimeout(700);
-    await page.screenshot({ path: `${OUT}/${name}.png` });
-    console.log('  ✓', name);
+    await shoot(page, name);
   }
   await ctx.close();
 }
@@ -231,8 +250,7 @@ for (const s of MODES) {
   await page.reload({ waitUntil: 'load' }).catch(() => {});
   await page.waitForSelector('nav[aria-label="Primary"]', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(400);
-  await page.screenshot({ path: `${OUT}/offline.png` });
-  console.log('  ✓ offline');
+  await shoot(page, 'offline');
   await ctx.close();
 }
 {
