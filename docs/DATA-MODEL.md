@@ -143,7 +143,9 @@ derived on read:
   `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
    − Σ transactions`, clamped ≥ 0 (`flowRunningBalanceMinor`). This is a
   *secondary* view — the flow jar's primary metric stays spent-this-month
-  vs. cap. Opening balance is now settable on any jar type.
+  vs. cap. `openingBalanceMinor` is settable on any jar type and always
+  means a **positive carry-in** (money already set aside before tracking
+  began), never a pre-spend.
 - The jar-detail chart (`jars/timeline.ts` — `buildBalanceTimeline(jar,
   monthlyCreditMinor, debits, ref)`) expands whichever of the two applies
   into a point series: the monthly credit accrues at each whole-month

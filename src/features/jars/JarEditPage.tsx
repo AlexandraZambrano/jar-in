@@ -221,7 +221,7 @@ export function JarEditPage() {
           <span className="muted" style={{ fontWeight: 400 }}>
             {type === 'accumulation'
               ? 'What this jar already holds today.'
-              : 'What you’ve already spent from this jar to date — seeds its running-balance chart.'}
+              : 'Money already set aside for this jar before you started tracking — it carries into the running balance.'}
           </span>
         </label>
 
