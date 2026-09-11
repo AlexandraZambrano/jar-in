@@ -34,7 +34,7 @@ jobs:
       # A clean production build must always be reachable.
       - run: npm run build
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -76,7 +76,7 @@ jobs:
       # playwright.config.ts webServer builds the app and serves it on :4173.
       - run: npm run e2e
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
