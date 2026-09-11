@@ -65,17 +65,45 @@ Jobs:
 The app is a static PWA bundle (`dist/`) plus, later, a small backend
 function for Groq calls (Phase 3) and Supabase for sync (Phase 5).
 
-- **v1 (static only):** Coolify application pointed at the repo, build
-  command `npm ci && npm run build`, publish directory `dist/`, SPA
-  fallback to `index.html`. Auto-deploy on push to `main` **after** CI is
-  green (Coolify waits on the commit status, or deploy is a manual
-  promote from a green `main`).
-- **Rollback:** Coolify keeps previous builds; redeploy the last green
-  commit.
-- **Env:** none for v1. Phase 3+ adds `GROQ_*` and `SUPABASE_*` as
-  Coolify secrets, never in the client bundle (SPEC §10).
-- **Headers:** long-cache the hashed `assets/`, `no-cache` for
-  `index.html`, `sw.js` and `manifest.webmanifest` so updates land.
+### v1 — the container
+
+Shipped in the repo:
+
+| File | Role |
+|---|---|
+| [`Dockerfile`](../Dockerfile) | 2-stage: `node:24-alpine` runs `npm ci && npm run build`, then `nginx:1.27-alpine` serves `/dist`. Exposes `80`, has a `HEALTHCHECK` on `/`. |
+| [`docker/nginx.conf`](../docker/nginx.conf) | SPA fallback (`try_files … /index.html`) + the cache policy below + gzip + `nosniff`. |
+| [`.dockerignore`](../.dockerignore) | Keeps `docs/` (screenshots) and `design/` out of the build context. |
+
+**Cache policy** (enforced by `nginx.conf`, not just documented):
+
+| Path | `Cache-Control` |
+|---|---|
+| `/assets/*`, `/workbox-<hash>.js` | `public, max-age=31536000, immutable` |
+| `/index.html` + SPA fallback | `no-cache` |
+| `/sw.js`, `/registerSW.js`, `/manifest.webmanifest` | `no-cache` |
+| icons / `favicon.svg` / fonts | `public, max-age=604800` |
+
+### v1 — Coolify setup (server access — user)
+
+1. **New Resource → Application → Public Repository**
+   `https://github.com/AlexandraZambrano/jar-in`, branch `main`.
+2. **Build Pack: `Dockerfile`** (path `./Dockerfile`). No build/start
+   command overrides — the image handles both.
+3. **Port:** `80`. **Health check path:** `/`.
+4. **Domain:** set the FQDN; Coolify provisions the Let's Encrypt cert.
+5. **Deployments → enable "Wait for CI"** (GitHub commit status) so a
+   push only deploys once `ci.yml` is green, **or** leave auto-deploy
+   off and promote a green `main` manually.
+6. **Env:** none for v1. Phase 3+ adds `GROQ_*` / `SUPABASE_*` as
+   Coolify secrets — never in the client bundle (SPEC §10).
+
+- **Rollback:** Coolify keeps previous image builds; redeploy the last
+  green commit.
+- **Smoke check after deploy:** `/` loads, a hard-refresh on
+  `/jars` resolves (SPA fallback), DevTools → Application shows the
+  service worker `activated`, and `curl -I …/assets/<file>` returns the
+  `immutable` header while `curl -I …/sw.js` returns `no-cache`.
 
 ## Release flow
 
@@ -93,11 +121,17 @@ feature branch → PR → CI (check + e2e) green → review → merge to main
 - [x] `WORKFLOW.md` — per-feature test requirement + the `e2e` step
 - [x] `ARCHITECTURE.md` — CI gate + deploy target noted
 - [x] ADR [`decisions/0005-ci-and-deployment.md`](decisions/0005-ci-and-deployment.md)
+- [x] `Dockerfile` + `docker/nginx.conf` + `.dockerignore` — the
+      production container with SPA fallback and the cache policy above
 
 ## Needs infrastructure / repo access (user)
 
 - [x] Push the repo to GitHub — `github.com/AlexandraZambrano/jar-in`
       (`main` + `feat/v1-phase-1`). Actions runs `ci.yml` on every push.
-- [ ] Coolify app configured (server access).
+- [ ] Coolify app configured — follow "v1 — Coolify setup" above
+      (server access). The `Dockerfile` is ready; nothing else is needed
+      in the repo.
 - [ ] Branch protection on `main`: both CI jobs green before merge, no
       direct pushes (repo admin).
+- [ ] `docker build` has **not** been run locally (no Docker daemon on
+      the dev box) — first real build happens on the Coolify server.

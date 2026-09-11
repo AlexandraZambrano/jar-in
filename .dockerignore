@@ -1,0 +1,21 @@
+# Build context — keep it lean. Only source + config is needed to build.
+.git
+.github
+node_modules
+dist
+dev-dist
+build
+coverage
+playwright-report
+test-results
+blob-report
+playwright/.cache
+
+# Not needed for the production bundle (big: screenshots, design canvas)
+docs
+design
+
+*.log
+.DS_Store
+.vscode
+.idea

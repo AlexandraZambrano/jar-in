@@ -117,10 +117,13 @@ then an `e2e` job. The same commands are the local gate — see
 
 ## Deploy
 
-Static PWA bundle (`dist/`) served by Coolify on Hetzner from a green
-`main`, SPA fallback to `index.html`, hashed assets long-cached and
-`index.html` / `sw.js` / `manifest.webmanifest` `no-cache`. No backend
-in v1. Details in [`DEPLOYMENT.md`](DEPLOYMENT.md).
+Static PWA bundle built and served by the repo `Dockerfile` (2-stage:
+`node:24-alpine` build → `nginx:1.27-alpine` serve with
+`docker/nginx.conf`), run by Coolify on Hetzner from a green `main`. SPA
+fallback to `index.html`; hashed `assets/` + `workbox-*.js` cached
+immutably, `index.html` / `sw.js` / `registerSW.js` /
+`manifest.webmanifest` `no-cache`. No backend in v1. Details in
+[`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Not in v1 (but designed around)
 
