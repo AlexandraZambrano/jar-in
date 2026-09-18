@@ -5,6 +5,28 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-18 — Deployed to Coolify (jars.alexzambrano.com); fixed a real healthcheck bug
+
+First real deploy, walked end-to-end in Coolify: `Alex projects` →
+`Jar-in`, public repo `AlexandraZambrano/jar-in`, Dockerfile build pack,
+port `80`, domain `jars.alexzambrano.com`.
+
+**Found in production, not local `docker run` + `curl`:** the container
+never went healthy — Coolify rolled the deploy back with "New container
+is not healthy". Root cause: `HEALTHCHECK`'s `wget http://localhost/`
+resolves `localhost` to `::1` (IPv6) first inside the container, but
+`nginx.conf` only `listen`s on IPv4 — "connection refused" on its own
+loopback. `curl`-from-the-host in the earlier local test never exercises
+this path (the request arrives over the published port, not from inside
+the container). Fixed by pointing the healthcheck at `http://127.0.0.1/`
+— confirmed `healthy` on the first check, locally and on the redeploy.
+`docs/DEPLOYMENT.md` updated with the finding and marked the Coolify
+setup done.
+
+**Still needed (user):** a DNS A record for `jars.alexzambrano.com` →
+the Hetzner server IP (Coolify's sslip.io fallback domain works without
+it, for a quick check meanwhile); branch protection on `main`.
+
 ## 2026-09-07 — Fix: flow-jar running-balance chart rendered broken
 
 Reported: the Essentials (flow) jar detail showed a flat line pinned to

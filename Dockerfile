@@ -24,5 +24,8 @@ EXPOSE 80
 # Fail the container if the config is bad; nginx:alpine's own CMD then runs.
 RUN nginx -t
 
+# 127.0.0.1, not localhost: this image's /etc/hosts resolves "localhost" to
+# ::1 first, and nginx.conf only listens on IPv4 — wget would hit "connection
+# refused" on the IPv6 loopback and the container would never go healthy.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1
+  CMD wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1

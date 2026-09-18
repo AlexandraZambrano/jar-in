@@ -105,6 +105,16 @@ Shipped in the repo:
   service worker `activated`, and `curl -I …/assets/<file>` returns the
   `immutable` header while `curl -I …/sw.js` returns `no-cache`.
 
+**Bug found on the real Coolify deploy, not caught by local `docker run`
++ `curl` from the host:** the `HEALTHCHECK` used `wget http://localhost/`;
+the image's `/etc/hosts` resolves `localhost` to `::1` first, and
+`nginx.conf` only `listen`s on IPv4, so `wget` hit "connection refused" on
+the container's *own* IPv6 loopback and Coolify rolled the deploy back as
+unhealthy. `curl`-from-the-host never exercises this path (the request
+comes in over the published port, not from inside the container). Fixed
+by pointing the healthcheck at `http://127.0.0.1/` instead — verified
+`healthy` on the very first check, both locally and on the redeploy.
+
 ## Release flow
 
 ```
@@ -128,10 +138,11 @@ feature branch → PR → CI (check + e2e) green → review → merge to main
 
 - [x] Push the repo to GitHub — `github.com/AlexandraZambrano/jar-in`
       (`main` + `feat/v1-phase-1`). Actions runs `ci.yml` on every push.
-- [ ] Coolify app configured — follow "v1 — Coolify setup" above
-      (server access). The `Dockerfile` is ready; nothing else is needed
-      in the repo.
+- [x] Coolify app configured — `Jar-in` in the `Alex projects` project,
+      Dockerfile build pack, port `80`, domain `jars.alexzambrano.com`.
+      Deployed and healthy (2026-09-18). DNS **A record for
+      `jars.alexzambrano.com` → the Hetzner server IP** still needs
+      adding for the real domain to resolve (Coolify's own sslip.io
+      domain works without it, in case you need it for a quick check).
 - [ ] Branch protection on `main`: both CI jobs green before merge, no
       direct pushes (repo admin).
-- [ ] `docker build` has **not** been run locally (no Docker daemon on
-      the dev box) — first real build happens on the Coolify server.
