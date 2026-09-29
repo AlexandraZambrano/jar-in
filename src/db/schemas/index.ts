@@ -5,4 +5,5 @@ export * from './subCategory';
 export * from './incomeSource';
 export * from './transaction';
 export * from './withdrawalEvent';
+export * from './allocationEvent';
 export * from './fxRate';

@@ -14,6 +14,7 @@ import {
   incomeSourceSchema,
   transactionSchema,
   withdrawalEventSchema,
+  allocationEventSchema,
   fxRateSchema,
   type Wallet,
   type Jar,
@@ -22,6 +23,7 @@ import {
   type IncomeSource,
   type Transaction,
   type WithdrawalEvent,
+  type AllocationEvent,
   type FxRate,
 } from './schemas';
 
@@ -33,6 +35,7 @@ export interface Collections {
   incomeSources: RxCollection<IncomeSource>;
   transactions: RxCollection<Transaction>;
   withdrawalEvents: RxCollection<WithdrawalEvent>;
+  allocationEvents: RxCollection<AllocationEvent>;
   fxRates: RxCollection<FxRate>;
 }
 
@@ -68,6 +71,7 @@ async function create(): Promise<JarInDatabase> {
     incomeSources: { schema: incomeSourceSchema },
     transactions: { schema: transactionSchema },
     withdrawalEvents: { schema: withdrawalEventSchema },
+    allocationEvents: { schema: allocationEventSchema },
     fxRates: { schema: fxRateSchema },
   });
 

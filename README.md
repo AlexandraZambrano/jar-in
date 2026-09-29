@@ -111,6 +111,7 @@ erDiagram
     JAR ||--o{ TRANSACTION : "tagged"
     SUB_CATEGORY ||--o{ TRANSACTION : "optionally tags"
     JAR ||--o{ WITHDRAWAL_EVENT : "accumulation only"
+    JAR ||--o{ ALLOCATION_EVENT : "credited each month"
     WALLET ||--o{ INCOME_SOURCE : "destination"
 
     WALLET {
@@ -170,6 +171,12 @@ erDiagram
         int amountMinor
         string date
         string reason "nullable"
+    }
+    ALLOCATION_EVENT {
+        string id PK
+        string jarId FK
+        int amountMinor "planned amount when it posted"
+        string date
     }
 ```
 
