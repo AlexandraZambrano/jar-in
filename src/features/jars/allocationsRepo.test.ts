@@ -98,6 +98,19 @@ describe('syncAllocationEvents', () => {
     expect(await db.allocationEvents.count().exec()).toBe(3);
   });
 
+  it('two concurrent runs post each month once (StrictMode / two tabs)', async () => {
+    const db = await makeDb();
+    await db.jars.insert(jar());
+    await db.incomeSources.insert(salary(200_000));
+
+    await Promise.all([
+      syncAllocationEvents(db, '2026-04-15'),
+      syncAllocationEvents(db, '2026-04-15'),
+    ]);
+
+    expect(await db.allocationEvents.count().exec()).toBe(3);
+  });
+
   it('only catches up the new months, valued at the planned amount *then*', async () => {
     const db = await makeDb();
     await db.jars.insert(jar());
