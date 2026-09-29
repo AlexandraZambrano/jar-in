@@ -46,8 +46,11 @@ fails a test if `alert`/`confirm`/`prompt` ever fires (the
 
 ## CI — GitHub Actions (`.github/workflows/ci.yml`)
 
-Triggers: `push` to any branch, `pull_request` to `main`.
-`concurrency` cancels a ref's previous in-flight run.
+Triggers: `push` to `main` / `dev`, `pull_request` to `main` / `dev`.
+Feature branches get CI through their PR — also listing them under
+`push` would run every PR commit twice (push and PR runs land in
+different concurrency groups). `concurrency` cancels a ref's previous
+in-flight run.
 
 Jobs:
 
@@ -118,10 +121,14 @@ by pointing the healthcheck at `http://127.0.0.1/` instead — verified
 ## Release flow
 
 ```
-feature branch → PR → CI (check + e2e) green → review → merge to main
-      → CI on main green → Coolify deploy → smoke-check the live URL
-      → tag if it's a milestone
+GitHub issue → feat/<slug> branched off dev → PR into dev ("Closes #n")
+      → CI (check + e2e) green → review → merge to dev
+      → dev → PR into main → CI green → merge → Coolify deploy
+      → smoke-check the live URL → tag if it's a milestone
 ```
+
+Work is tracked on the [Jars project board](https://github.com/users/AlexandraZambrano/projects/11)
+(kanban: Todo → In Progress → Done).
 
 ## Built
 
