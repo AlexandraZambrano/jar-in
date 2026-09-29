@@ -23,6 +23,7 @@ erDiagram
     JAR ||--o{ TRANSACTION : "tagged"
     SUB_CATEGORY ||--o{ TRANSACTION : "optionally tags"
     JAR ||--o{ WITHDRAWAL_EVENT : "accumulation only"
+    JAR ||--o{ ALLOCATION_EVENT : "credited each month"
     WALLET ||--o{ INCOME_SOURCE : "destination"
     FX_RATE }o--|| CURRENCY : "base"
     FX_RATE }o--|| CURRENCY : "quote"
@@ -103,6 +104,15 @@ erDiagram
         string createdAt
         string updatedAt
     }
+    ALLOCATION_EVENT {
+        string id PK
+        string jarId FK
+        int amountMinor "planned amount when it posted"
+        string currency "ISO-4217"
+        string date "ISO date, startedAt + n months"
+        string createdAt
+        string updatedAt
+    }
     FX_RATE {
         string id PK "base_quote"
         string baseCurrency
@@ -123,12 +133,24 @@ erDiagram
 | `incomeSources` | `schemas/incomeSource.ts` | `active`, `updatedAt` |
 | `transactions` | `schemas/transaction.ts` | `jarId`, `date`, `externalTransactionId` |
 | `withdrawalEvents` | `schemas/withdrawalEvent.ts` | `jarId`, `date` |
+| `allocationEvents` | `schemas/allocationEvent.ts` | `jarId`, `date` |
 | `fxRates` | `schemas/fxRate.ts` | `fetchedAt` |
 
-## v1 computation model (deterministic, in `*/compute.ts`)
+## Computation model (deterministic, in `*/compute.ts`)
 
-Because there is no period-allocation engine yet (Phase 2), progress is
-derived on read:
+Balances are derived on read from a real **allocation ledger** (feature
+0013), not a synthetic multiplier:
+
+- **Period-allocation engine** (`jars/allocationsRepo.ts` —
+  `syncAllocationEvents(db, ref?)`) posts one `allocationEvent` per jar per
+  whole month elapsed since `startedAt`, dated `startedAt + n months`,
+  valued at `jarPlannedMinor` **as of the moment it posts**. Posted events
+  are never rewritten: changing a jar's percentage or the income only
+  affects months posted afterwards. It's idempotent ("months already
+  posted" is derived from the latest posted date) and runs once per app
+  open in `RxdbProvider` (before render) plus at the end of
+  `seedExampleData` (the only path that inserts an already-aged jar). No-op
+  when there's no income or a jar's planned amount is 0.
 
 - **Monthly income** = Σ over `active` income sources of `amountMinor`
   normalised to monthly (`weekly ×52/12`, `biweekly ×26/12`,
@@ -137,21 +159,21 @@ derived on read:
 - **Flow jar — spent this month** = Σ `transactions` for the jar dated in
   the current calendar month. Progress = `spent / planned`.
 - **Accumulation jar — balance** =
-  `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
-   − Σ withdrawalEvents`, clamped ≥ 0. Progress = `balance / targetAmountMinor`.
+  `openingBalanceMinor + Σ allocationEvents − Σ withdrawalEvents`,
+  clamped ≥ 0. Progress = `balance / targetAmountMinor`.
 - **Flow jar — running balance** =
-  `openingBalanceMinor + wholeMonthsSince(startedAt) × plannedPerMonth
-   − Σ transactions`, clamped ≥ 0 (`flowRunningBalanceMinor`). This is a
+  `openingBalanceMinor + Σ allocationEvents − Σ transactions`, clamped ≥ 0
+  (`flowRunningBalanceMinor`). This is a
   *secondary* view — the flow jar's primary metric stays spent-this-month
   vs. cap. `openingBalanceMinor` is settable on any jar type and always
   means a **positive carry-in** (money already set aside before tracking
   began), never a pre-spend.
 - The jar-detail chart (`jars/timeline.ts` — `buildBalanceTimeline(jar,
-  monthlyCreditMinor, debits, ref)`) expands whichever of the two applies
-  into a point series: the monthly credit accrues at each whole-month
-  boundary, each `DebitEvent` (a withdrawal, or a transaction for a flow
-  jar) subtracts on its date, and the final point equals the balance
-  above. Event dates are clamped into `[startedAt, ref]` for plotting
+  credits, debits, ref)`) expands whichever of the two applies into a
+  point series: each `CreditEvent` (a posted allocation) accrues on its
+  own date at its own amount, each `DebitEvent` (a withdrawal, or a
+  transaction for a flow jar) subtracts on its date, and the final point
+  equals the balance above. Event dates are clamped into `[startedAt, ref]` for plotting
   (a debit predating the jar stacks on the start point) so the x-scale
   can't be blown out; the delta is unchanged. `hasTimelineHistory()` is
   false — and the chart shows a "fills in as months pass" note instead —
@@ -160,7 +182,8 @@ derived on read:
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
 - **Projections** (`projections/project.ts`) are fully derived — nothing
   is stored. `projectGoalDate` runs EMA / least-squares over
-  `monthlyBalanceSeries` to estimate a goal date; the previous run is
+  `monthlyBalanceSeries` (the allocation ledger sampled at each month
+  boundary) to estimate a goal date; the previous run is
   kept in memory (`projections/tracker.ts`) only so the coach note can
   name the biggest shift. Recompute is synchronous with the data change.
 
@@ -199,3 +222,5 @@ the change in this file's history below and in `PROGRESS.md`.
 ## History
 
 - **2026-09-06** — v0 of all 8 schemas created for Phase 1.
+- **2026-09-29** — new `allocationEvents` collection (v0), feature 0013.
+  Additive — no existing schema changed, no migration.

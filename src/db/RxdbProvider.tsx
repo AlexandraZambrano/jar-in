@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { requestPersistence } from '@/lib/storagePersistence';
+import { syncAllocationEvents } from '@/features/jars/allocationsRepo';
 import { getDatabase, type JarInDatabase } from './database';
 
 const DbContext = createContext<JarInDatabase | null>(null);
@@ -23,7 +24,8 @@ export function RxdbProvider({ children }: { children: ReactNode }) {
       }
     });
     getDatabase()
-      .then((database) => {
+      .then(async (database) => {
+        await syncAllocationEvents(database);
         if (active) setDb(database);
       })
       .catch((e: unknown) => {

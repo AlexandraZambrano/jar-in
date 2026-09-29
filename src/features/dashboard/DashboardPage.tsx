@@ -6,7 +6,7 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import { formatMoney } from '@/lib/money';
 import { monthLabel } from '@/lib/date';
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import { CoachNote } from '@/components/CoachNote';
 import { AllocationDonut, type DonutSegment } from '@/components/AllocationDonut';
 import { resolveJarColors } from '@/features/jars/jarPalette';
@@ -40,6 +40,10 @@ export function DashboardPage() {
     () => db.withdrawalEvents.find(),
     [db],
   );
+  const { data: allocations } = useRxQuery<AllocationEvent>(
+    () => db.allocationEvents.find(),
+    [db],
+  );
 
   const jars = useMemo(
     () => [...jarsRaw].sort((a, b) => a.order - b.order),
@@ -51,8 +55,8 @@ export function DashboardPage() {
   const currency = jars[0]?.currency ?? 'EUR';
 
   const computed = useMemo(
-    () => jars.map((jar) => computeJar(jar, inc.minor, txns, withdrawals)),
-    [jars, inc.minor, txns, withdrawals],
+    () => jars.map((jar) => computeJar(jar, inc.minor, txns, withdrawals, allocations)),
+    [jars, inc.minor, txns, withdrawals, allocations],
   );
 
   // Deterministic goal-date projections for accumulation jars. Recomputed
@@ -65,7 +69,7 @@ export function DashboardPage() {
       computed
         .filter((c) => c.jar.type === 'accumulation')
         .map((c) => {
-          const series = monthlyBalanceSeries(c.jar, c.plannedMinor, withdrawals);
+          const series = monthlyBalanceSeries(c.jar, allocations, withdrawals);
           const p = projectGoalDate(c.jar, series, c.plannedMinor);
           return {
             jarId: c.jar.id,
@@ -73,7 +77,7 @@ export function DashboardPage() {
             monthsRemaining: p ? p.monthsRemaining : null,
           };
         }),
-    [computed, withdrawals],
+    [computed, withdrawals, allocations],
   );
 
   const [notable, setNotable] = useState<NotableChange | null>(() => getNotableChange());

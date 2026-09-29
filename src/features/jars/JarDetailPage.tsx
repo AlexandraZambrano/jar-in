@@ -5,6 +5,7 @@ import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type {
+  AllocationEvent,
   IncomeSource,
   Jar,
   SubCategory,
@@ -48,6 +49,10 @@ export function JarDetailPage() {
     [db],
   );
   const { data: subs } = useRxQuery<SubCategory>(() => db.subCategories.find(), [db]);
+  const { data: allocations } = useRxQuery<AllocationEvent>(
+    () => db.allocationEvents.find(),
+    [db],
+  );
 
   const jar = jars.find((j) => j.id === id);
 
@@ -74,7 +79,7 @@ export function JarDetailPage() {
 
   const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
   const money = (m: number) => formatMoney(m, jar.currency, locale);
-  const c = computeJar(jar, inc.minor, txns, withdrawals);
+  const c = computeJar(jar, inc.minor, txns, withdrawals, allocations);
   const planned = jarPlannedMinor(jar, inc.minor);
 
   const jarWithdrawals = withdrawals
@@ -82,11 +87,14 @@ export function JarDetailPage() {
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const jarTxns = txns.filter((t) => t.jarId === jar.id);
+  const credits = allocations
+    .filter((a) => a.jarId === jar.id)
+    .map((a) => ({ amountMinor: a.amountMinor, date: a.date, label: 'Allocated' }));
   const timelinePoints =
     jar.type === 'accumulation'
       ? buildBalanceTimeline(
           jar,
-          planned,
+          credits,
           jarWithdrawals.map((w) => ({
             amountMinor: w.amountMinor,
             date: w.date,
@@ -95,7 +103,7 @@ export function JarDetailPage() {
         )
       : buildBalanceTimeline(
           jar,
-          planned,
+          credits,
           jarTxns.map((t) => ({
             amountMinor: t.amountMinor,
             date: t.date,
@@ -241,7 +249,7 @@ export function JarDetailPage() {
           </Sticker>
 
           {(() => {
-            const series = monthlyBalanceSeries(jar, planned, withdrawals);
+            const series = monthlyBalanceSeries(jar, allocations, withdrawals);
             const p = projectGoalDate(
               jar,
               series,

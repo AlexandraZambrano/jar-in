@@ -1,6 +1,10 @@
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import type { IncomeFrequency } from '@/db/schemas';
-import { isSameMonth, nowISO, wholeMonthsBetween } from '@/lib/date';
+import { isSameMonth, nowISO } from '@/lib/date';
+
+function sumForJar(jarId: string, events: { jarId: string; amountMinor: number }[]): number {
+  return events.filter((e) => e.jarId === jarId).reduce((s, e) => s + e.amountMinor, 0);
+}
 
 const MONTHLY_FACTOR: Record<IncomeFrequency, number> = {
   monthly: 1,
@@ -49,31 +53,24 @@ export function flowSpentThisMonthMinor(
 
 export function accumulationBalanceMinor(
   jar: Jar,
-  plannedPerMonthMinor: number,
+  allocations: AllocationEvent[],
   withdrawals: WithdrawalEvent[],
-  ref: string = nowISO(),
 ): number {
-  const months = wholeMonthsBetween(jar.startedAt, ref);
-  const contributed = jar.openingBalanceMinor + months * plannedPerMonthMinor;
-  const withdrawn = withdrawals
-    .filter((w) => w.jarId === jar.id)
-    .reduce((s, w) => s + w.amountMinor, 0);
+  const contributed = jar.openingBalanceMinor + sumForJar(jar.id, allocations);
+  const withdrawn = sumForJar(jar.id, withdrawals);
   return Math.max(0, contributed - withdrawn);
 }
 
-/** Flow jar treated as a running account: opening + each month's cap credited,
- *  every transaction debited. How far ahead/behind you are over time. */
+/** Flow jar treated as a running account: opening + every posted allocation
+ *  credited, every transaction debited. How far ahead/behind you are over
+ *  time. */
 export function flowRunningBalanceMinor(
   jar: Jar,
-  plannedPerMonthMinor: number,
+  allocations: AllocationEvent[],
   transactions: Transaction[],
-  ref: string = nowISO(),
 ): number {
-  const months = wholeMonthsBetween(jar.startedAt, ref);
-  const credited = jar.openingBalanceMinor + months * plannedPerMonthMinor;
-  const spent = transactions
-    .filter((t) => t.jarId === jar.id)
-    .reduce((s, t) => s + t.amountMinor, 0);
+  const credited = jar.openingBalanceMinor + sumForJar(jar.id, allocations);
+  const spent = sumForJar(jar.id, transactions);
   return Math.max(0, credited - spent);
 }
 
@@ -103,6 +100,7 @@ export function computeJar(
   monthlyIncomeMinor: number,
   transactions: Transaction[],
   withdrawals: WithdrawalEvent[],
+  allocations: AllocationEvent[] = [],
   ref: string = nowISO(),
 ): JarComputed {
   const plannedMinor = jarPlannedMinor(jar, monthlyIncomeMinor);
@@ -119,7 +117,7 @@ export function computeJar(
       goalMet: false,
     };
   }
-  const actualMinor = accumulationBalanceMinor(jar, plannedMinor, withdrawals, ref);
+  const actualMinor = accumulationBalanceMinor(jar, allocations, withdrawals);
   const targetMinor = jar.targetAmountMinor;
   const ratio = targetMinor && targetMinor > 0 ? actualMinor / targetMinor : 0;
   return {
