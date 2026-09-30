@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { requestPersistence } from '@/lib/storagePersistence';
 import { syncAllocationEvents } from '@/features/jars/allocationsRepo';
+import { syncFxRates } from '@/features/income/fxRepo';
 import { getDatabase, type JarInDatabase } from './database';
 
 const DbContext = createContext<JarInDatabase | null>(null);
@@ -27,6 +28,11 @@ export function RxdbProvider({ children }: { children: ReactNode }) {
       .then(async (database) => {
         await syncAllocationEvents(database);
         if (active) setDb(database);
+        // Network — never blocks the first render. Allocations deferred for a
+        // missing rate catch up once fresh rates land.
+        void syncFxRates(database).then((fetched) => {
+          if (fetched) void syncAllocationEvents(database);
+        });
       })
       .catch((e: unknown) => {
         if (active) setError(e instanceof Error ? e : new Error(String(e)));

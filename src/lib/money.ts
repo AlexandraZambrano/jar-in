@@ -35,6 +35,22 @@ export function addMinor(...values: number[]): number {
   return values.reduce((a, b) => a + b, 0);
 }
 
+/** Convert `minor` of `from` into `to`. `rates` are `to`-based (units of each
+ *  currency per 1 `to` — the shape of an `fxRates` row with base `to`).
+ *  Goes through major units so differing decimals (JPY 0, EUR 2) stay right.
+ *  `null` when there's no rate. */
+export function convertMinor(
+  minor: number,
+  from: string,
+  to: string,
+  rates: Record<string, number>,
+): number | null {
+  if (from === to) return minor;
+  const rate = rates[from];
+  if (!rate) return null;
+  return toMinor(fromMinor(minor, from) / rate, to);
+}
+
 /** Currency string in the app's fixed English locale (override only for tests). */
 export function formatMoney(
   minor: number,

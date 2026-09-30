@@ -152,9 +152,21 @@ Balances are derived on read from a real **allocation ledger** (feature
   `seedExampleData` (the only path that inserts an already-aged jar). No-op
   when there's no income or a jar's planned amount is 0.
 
+- **Home currency** = the jars' currency (every jar shares it; new jars
+  copy the first one's). All jar math runs in it.
 - **Monthly income** = Σ over `active` income sources of `amountMinor`
   normalised to monthly (`weekly ×52/12`, `biweekly ×26/12`,
-  `yearly ×1/12`, `once → 0`). v1 assumes one currency.
+  `yearly ×1/12`, `once → 0`), each **converted into the home currency**
+  (`convertMinor`, via major units) at the cached `fxRates` row for
+  `<home>_<source currency>`. A currency with no rate is left out and
+  reported as `unconverted` — never summed raw (feature 0014).
+- **FX cache** (`income/fxRepo.ts` — `syncFxRates`) fetches
+  `api.frankfurter.dev/v1/latest?base=<home>` (ECB rates) and upserts one
+  row per quote currency. It makes no request unless an active income
+  source is foreign and the newest row is ≥ 24 h old; offline keeps the
+  cache. Runs after first render on app open and after any income
+  create/update. The allocation engine defers while any income is
+  `unconverted`, so no month freezes at an incomplete total.
 - **Jar planned / month** = `round(monthlyIncome × percentage / 100)`.
 - **Flow jar — spent this month** = Σ `transactions` for the jar dated in
   the current calendar month. Progress = `spent / planned`.
@@ -222,5 +234,7 @@ the change in this file's history below and in `PROGRESS.md`.
 ## History
 
 - **2026-09-06** — v0 of all 8 schemas created for Phase 1.
+- **2026-09-30** — `fxRates` written for the first time (feature 0014);
+  schema unchanged.
 - **2026-09-29** — new `allocationEvents` collection (v0), feature 0013.
   Additive — no existing schema changed, no migration.
