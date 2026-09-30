@@ -4,6 +4,7 @@ import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import type { JarInDatabase } from '@/db/database';
 import {
   allocationEventSchema,
+  fxRateSchema,
   incomeSourceSchema,
   jarSchema,
   type IncomeSource,
@@ -24,6 +25,7 @@ async function makeDb(): Promise<JarInDatabase> {
     jars: { schema: jarSchema },
     incomeSources: { schema: incomeSourceSchema },
     allocationEvents: { schema: allocationEventSchema },
+    fxRates: { schema: fxRateSchema },
   });
   open = db;
   return db as unknown as JarInDatabase;
@@ -129,6 +131,27 @@ describe('syncAllocationEvents', () => {
       ['2026-04-01', 100_000],
       ['2026-05-01', 100_000],
     ]);
+  });
+
+  it('defers while a foreign income has no rate, then posts the converted total', async () => {
+    const db = await makeDb();
+    await db.jars.insert(jar()); // EUR home, 25%
+    await db.incomeSources.insert(salary(200_000)); // €2,000
+    await db.incomeSources.insert({ ...salary(100_000), id: 'usd', currency: 'USD' }); // $1,000
+
+    await syncAllocationEvents(db, '2026-02-15');
+    expect(await db.allocationEvents.count().exec()).toBe(0); // no USD rate yet
+
+    await db.fxRates.insert({
+      id: 'EUR_USD',
+      baseCurrency: 'EUR',
+      quoteCurrency: 'USD',
+      rate: 1.25,
+      fetchedAt: ts,
+    });
+    await syncAllocationEvents(db, '2026-02-15');
+    // (€2,000 + $1,000→€800) × 25% = €700
+    expect(await amounts(db)).toEqual([['2026-02-01', 70_000]]);
   });
 
   it('posts nothing for a jar younger than a month, or with no income', async () => {

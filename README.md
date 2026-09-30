@@ -180,8 +180,9 @@ erDiagram
     }
 ```
 
-There is also an `FX_RATE` table, reserved for the Phase 2
-display-currency rollup and unused in v1.
+There is also an `FX_RATE` table: a daily cache of ECB exchange rates
+(via Frankfurter) used to convert foreign-currency income into the jars'
+currency. It's only fetched when some income is in another currency.
 
 ## Stack, and why
 

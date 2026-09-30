@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { APP_LOCALE } from '@/lib/locale';
@@ -6,7 +6,6 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type {
   AllocationEvent,
-  IncomeSource,
   Jar,
   SubCategory,
   Transaction,
@@ -17,7 +16,8 @@ import { ProgressBar } from '@/components/ProgressBar';
 import { Icon, type IconName } from '@/components/icons';
 import { formatMoney, parseAmountInput, toMinor } from '@/lib/money';
 import { isSameMonth, nowISO, todayISO } from '@/lib/date';
-import { computeJar, jarPlannedMinor, monthlyIncome } from '@/features/dashboard/compute';
+import { computeJar, jarPlannedMinor } from '@/features/dashboard/compute';
+import { useMonthlyIncome } from '@/features/income/useMonthlyIncome';
 import { ConfirmButton } from '@/components/ConfirmButton';
 import {
   methodLabel,
@@ -42,7 +42,7 @@ export function JarDetailPage() {
   const calm = a11y.includes('calm');
 
   const { data: jars } = useRxQuery<Jar>(() => db.jars.find(), [db]);
-  const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
+  const { inc } = useMonthlyIncome();
   const { data: txns } = useRxQuery<Transaction>(() => db.transactions.find(), [db]);
   const { data: withdrawals } = useRxQuery<WithdrawalEvent>(
     () => db.withdrawalEvents.find(),
@@ -64,7 +64,6 @@ export function JarDetailPage() {
   // null = let projectGoalDate pick (regression once there's ≥4 months of history)
   const [projMethod, setProjMethod] = useState<ProjectionMethod | null>(null);
 
-  const inc = useMemo(() => monthlyIncome(income), [income]);
 
   if (!jar) {
     return (

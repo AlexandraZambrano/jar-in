@@ -38,7 +38,7 @@ Tracked as GitHub issues on the [Jars project board](https://github.com/users/Al
 | # | Feature | Spec | Issue | Status |
 |---|---|---|---|---|
 | 0013 | Period-allocation engine — income actually posts to jars each cycle | [features/0013-period-allocation-engine.md](features/0013-period-allocation-engine.md) | [#2](https://github.com/AlexandraZambrano/jar-in/issues/2) | 🟡 in review |
-| — | Display-currency rollup with cached FX table (Frankfurter) | — | [#3](https://github.com/AlexandraZambrano/jar-in/issues/3) | ⬜ |
+| 0014 | Multi-currency rollup — foreign income converted via cached FX (Frankfurter) | [features/0014-fx-rollup.md](features/0014-fx-rollup.md) | [#3](https://github.com/AlexandraZambrano/jar-in/issues/3) | 🟡 in review |
 | — | Sub-category analytics | — | [#4](https://github.com/AlexandraZambrano/jar-in/issues/4) | ⬜ |
 
 ## Phase 3 — AI layer (Groq)
@@ -78,3 +78,4 @@ Tracked as GitHub issues on the [Jars project board](https://github.com/users/Al
 - **2026-09-08** — `scripts/shots.mjs` now fits each screenshot to its real content height (was a fixed 390×1600 viewport → long empty runways). Repo pushed to **github.com/AlexandraZambrano/jar-in** (`main` + `feat/v1-phase-1`); first CI run green. **Next: Coolify deploy prep, then Phase 2 (period-allocation engine).**
 - **2026-09-18** — Deployed to Coolify at **jars.alexzambrano.com** (fixed a Docker healthcheck that hit its own IPv6 loopback).
 - **2026-09-29** — Phase 2 kicked off. Open work moved to GitHub issues #1–#4 on a kanban project board; new `dev` branch — features branch off `dev` and PR back into it. **0013 🟡 period-allocation engine** ([#2](https://github.com/AlexandraZambrano/jar-in/issues/2)): new `allocationEvents` ledger replaces the `months × planned` multiplier, so changing a percentage no longer reprices past months. 88 unit tests, 9 e2e.
+- **2026-09-30** — **0014 🟡 multi-currency rollup** ([#3](https://github.com/AlexandraZambrano/jar-in/issues/3)): `monthlyIncome` summed foreign income raw (USD 1,000 + EUR 1,000 = "2,000"); it now converts into the jars' currency at a cached ECB rate and leaves out (and names) any currency without one. Also fixed a race in 0013 (concurrent syncs double-posted a month). 99 unit tests, 9 e2e.

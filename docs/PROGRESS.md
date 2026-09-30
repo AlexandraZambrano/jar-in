@@ -5,6 +5,39 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-30 — 0014 multi-currency rollup (issue #3)
+
+**Why:** income sources can be in any currency, but `monthlyIncome`
+summed minor units raw — USD 1,000 + EUR 1,000 = "2,000", labelled with
+the first source's currency, and every jar's planned amount was built on
+it. (Jars, transactions and withdrawals all share the jar currency, so
+income is the only place foreign money enters.)
+
+**Added**
+
+- `convertMinor` (`lib/money.ts`) — converts via major units, `null`
+  with no rate.
+- `income/fxRepo.ts` — `syncFxRates` caches ECB rates from Frankfurter
+  in `fxRates`; no request unless an active income is foreign and the
+  cache is ≥ 24 h old; offline keeps the cache.
+- `income/useMonthlyIncome.ts` — one hook for income in the home
+  currency on Dashboard, Income, jar detail, Insights.
+
+**Changed**
+
+- `monthlyIncome(sources, home, rates)` → `{ minor, converted,
+  unconverted, hasOnce }`; `fxNote()` replaces the old "conversion
+  arrives in Phase 2" notice.
+- The allocation engine defers while any income has no rate.
+- ADR 0004 amended.
+
+**Also fixed (0013, before merge):** two concurrent allocation syncs —
+StrictMode's double effect in dev, or two tabs — double-posted a due
+month. Deterministic ids + `bulkInsert` (first writer wins).
+
+**Verified:** 99 unit tests, 9/9 e2e. Preview build: no FX request for an
+all-EUR setup; adding $1,000/mo → one request, total €3,280.67.
+
 ## 2026-09-29 — 0013 period-allocation engine (issue #2)
 
 Phase 2 starts. Workflow change: open work lives as GitHub issues on a
