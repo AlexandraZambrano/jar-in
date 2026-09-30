@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type {
+  AllocationEvent,
+  IncomeSource,
+  Jar,
+  Transaction,
+  WithdrawalEvent,
+} from '@/db/schemas';
+import { addMonths } from '@/lib/date';
 import {
   accumulationBalanceMinor,
   coachMessage,
@@ -48,6 +55,19 @@ function jar(partial: Partial<Jar>): Jar {
     updatedAt: ts,
     ...partial,
   };
+}
+
+/** `n` monthly allocation posts of `amountMinor` after `start`, as the engine writes them. */
+function monthly(start: string, n: number, amountMinor: number, jarId = 'j'): AllocationEvent[] {
+  return Array.from({ length: n }, (_, i) => ({
+    id: `a${i}`,
+    jarId,
+    amountMinor,
+    currency: 'EUR',
+    date: addMonths(start, i + 1),
+    createdAt: ts,
+    updatedAt: ts,
+  }));
 }
 
 function txn(partial: Partial<Transaction>): Transaction {
@@ -120,31 +140,40 @@ describe('flowSpentThisMonthMinor', () => {
 });
 
 describe('flowRunningBalanceMinor', () => {
-  it('opening + months*cap - all transactions, clamped at 0', () => {
+  it('opening + posted allocations - all transactions, clamped at 0', () => {
     const j = jar({ type: 'flow', startedAt: '2026-01-01', openingBalanceMinor: 10000 });
     const spent = flowRunningBalanceMinor(
       j,
-      40000,
+      [...monthly('2026-01-01', 4, 40000), ...monthly('2026-01-01', 4, 99999, 'other')],
       [
         txn({ id: '1', jarId: 'j', amountMinor: 25000, date: '2026-02-10' }),
         txn({ id: '2', jarId: 'j', amountMinor: 15000, date: '2026-03-10' }),
         txn({ id: '3', jarId: 'other', amountMinor: 99999, date: '2026-03-10' }),
       ],
-      '2026-05-01',
     );
-    // opening 10000 + 4 months * 40000 - (25000 + 15000)
+    // opening 10000 + 4 posts * 40000 - (25000 + 15000)
     expect(spent).toBe(10000 + 4 * 40000 - 40000);
   });
   it('clamps negative to 0', () => {
     const j = jar({ type: 'flow', startedAt: '2026-01-01', openingBalanceMinor: 0 });
     expect(
-      flowRunningBalanceMinor(j, 0, [txn({ jarId: 'j', amountMinor: 5000, date: '2026-02-01' })], '2026-03-01'),
+      flowRunningBalanceMinor(j, [], [txn({ jarId: 'j', amountMinor: 5000, date: '2026-02-01' })]),
     ).toBe(0);
   });
 });
 
 describe('accumulationBalanceMinor', () => {
-  it('opening + months elapsed * planned - withdrawals, clamped at 0', () => {
+  it('uses each post at the amount it posted at, not today’s planned figure', () => {
+    // 2 months at 10000, then the percentage changed → 2 months at 30000.
+    const j = jar({ type: 'accumulation', startedAt: '2026-01-01' });
+    const posts = [
+      ...monthly('2026-01-01', 2, 10000),
+      ...monthly('2026-03-01', 2, 30000).map((a, i) => ({ ...a, id: `b${i}` })),
+    ];
+    expect(accumulationBalanceMinor(j, posts, [])).toBe(2 * 10000 + 2 * 30000);
+  });
+
+  it('opening + posted allocations - withdrawals, clamped at 0', () => {
     const j = jar({ type: 'accumulation', startedAt: '2026-01-01', openingBalanceMinor: 20000 });
     const withdrawals: WithdrawalEvent[] = [
       {
@@ -158,8 +187,7 @@ describe('accumulationBalanceMinor', () => {
         updatedAt: ts,
       },
     ];
-    // 4 whole months from Jan 1 to May 1
-    const bal = accumulationBalanceMinor(j, 10000, withdrawals, '2026-05-01');
+    const bal = accumulationBalanceMinor(j, monthly('2026-01-01', 4, 10000), withdrawals);
     expect(bal).toBe(20000 + 4 * 10000 - 15000);
   });
 });
@@ -167,7 +195,14 @@ describe('accumulationBalanceMinor', () => {
 describe('computeJar', () => {
   it('marks a flow jar over cap', () => {
     const j = jar({ type: 'flow', percentage: 50 });
-    const r = computeJar(j, 40000, [txn({ amountMinor: 25000, date: '2026-06-10' })], [], '2026-06-15');
+    const r = computeJar(
+      j,
+      40000,
+      [txn({ amountMinor: 25000, date: '2026-06-10' })],
+      [],
+      [],
+      '2026-06-15',
+    );
     expect(r.plannedMinor).toBe(20000);
     expect(r.over).toBe(true);
   });
@@ -179,7 +214,7 @@ describe('computeJar', () => {
       targetAmountMinor: 30000,
       startedAt: '2026-01-01',
     });
-    const r = computeJar(j, 10000, [], [], '2026-05-01');
+    const r = computeJar(j, 10000, [], [], monthly('2026-01-01', 4, 10000));
     expect(r.goalMet).toBe(true);
   });
 });

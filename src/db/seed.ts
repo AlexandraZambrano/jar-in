@@ -3,6 +3,7 @@ import { newId } from '@/lib/id';
 import { addMonths, nowISO, todayISO } from '@/lib/date';
 import { toMinor } from '@/lib/money';
 import { DEFAULT_JAR_TEMPLATE } from '@/features/jars/jarTemplate';
+import { syncAllocationEvents } from '@/features/jars/allocationsRepo';
 import { DEFAULT_CURRENCY } from './constants';
 
 /** The example data set — used by the "skip, just set me up with defaults"
@@ -71,4 +72,8 @@ export async function seedExampleData(db: JarInDatabase): Promise<void> {
     })),
   );
   if (subs.length) await db.subCategories.bulkInsert(subs);
+
+  // The template back-dates some jars (startedMonthsAgo) — catch them up on
+  // allocation events now rather than waiting for the next app open.
+  await syncAllocationEvents(db);
 }

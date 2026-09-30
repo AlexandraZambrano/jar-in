@@ -5,6 +5,40 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-29 — 0013 period-allocation engine (issue #2)
+
+Phase 2 starts. Workflow change: open work lives as GitHub issues on a
+kanban project board; features branch off the new `dev` branch and PR
+back into it.
+
+**Why:** every balance was `opening + wholeMonthsSince(startedAt) ×
+currentPlannedPerMonth`, recomputed on read — change a percentage or the
+income and the whole history silently repriced.
+
+**Added**
+
+- `allocationEvents` collection — one row per jar per month, valued at
+  the planned amount when it posted.
+- `jars/allocationsRepo.ts` — `syncAllocationEvents(db)`: idempotent
+  catch-up, run once per app open in `RxdbProvider` and after
+  `seedExampleData`.
+
+**Changed**
+
+- `accumulationBalanceMinor` / `flowRunningBalanceMinor` are now plain
+  sums over the ledger (no `ref`, no month math). `computeJar`,
+  `buildBalanceTimeline`, `monthlyBalanceSeries` take the real events;
+  Dashboard / jar detail / Insights pass them through.
+- `wipeForRestart` also clears `allocationEvents`.
+
+**Verified**
+
+- `npm run check` — 88 unit tests (was 81); engine tested against a real
+  in-memory RxDB, including "a percentage change doesn't reprice posted
+  months". `npm run e2e` 9/9.
+- Preview build: seed numbers unchanged; Investment 25% → 50% keeps its
+  €4,200 balance (old model: €7,200); reload posts nothing new.
+
 ## 2026-09-18 — Deployed to Coolify (jars.alexzambrano.com); fixed a real healthcheck bug
 
 First real deploy, walked end-to-end in Coolify: `Alex projects` →

@@ -4,7 +4,7 @@ import { useDb } from '@/db/RxdbProvider';
 import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import { Sticker } from '@/components/Sticker';
 import { Icon, type IconName } from '@/components/icons';
 import { formatMoney } from '@/lib/money';
@@ -31,6 +31,10 @@ export function InsightsPage() {
     () => db.withdrawalEvents.find(),
     [db],
   );
+  const { data: allocations } = useRxQuery<AllocationEvent>(
+    () => db.allocationEvents.find(),
+    [db],
+  );
 
   const jars = useMemo(
     () => [...jarsRaw].sort((a, b) => a.order - b.order),
@@ -49,8 +53,8 @@ export function InsightsPage() {
 
       <div className="stack">
         {accumulation.map((jar, i) => {
-          const c = computeJar(jar, inc.minor, txns, withdrawals);
-          const series = monthlyBalanceSeries(jar, c.plannedMinor, withdrawals);
+          const c = computeJar(jar, inc.minor, txns, withdrawals, allocations);
+          const series = monthlyBalanceSeries(jar, allocations, withdrawals);
           const p = projectGoalDate(jar, series, c.plannedMinor);
           const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
           return (
