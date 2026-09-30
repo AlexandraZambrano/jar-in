@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { APP_LOCALE } from '@/lib/locale';
@@ -6,7 +6,6 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import type {
   AllocationEvent,
-  IncomeSource,
   Jar,
   SubCategory,
   Transaction,
@@ -17,7 +16,8 @@ import { ProgressBar } from '@/components/ProgressBar';
 import { Icon, type IconName } from '@/components/icons';
 import { formatMoney, parseAmountInput, toMinor } from '@/lib/money';
 import { isSameMonth, nowISO, todayISO } from '@/lib/date';
-import { computeJar, jarPlannedMinor, monthlyIncome } from '@/features/dashboard/compute';
+import { computeJar, jarPlannedMinor } from '@/features/dashboard/compute';
+import { useMonthlyIncome } from '@/features/income/useMonthlyIncome';
 import { ConfirmButton } from '@/components/ConfirmButton';
 import {
   methodLabel,
@@ -30,6 +30,7 @@ import { resolveJarColors } from './jarPalette';
 import { buildBalanceTimeline, hasTimelineHistory } from './timeline';
 import { BalanceTimeline } from './BalanceTimeline';
 import { createWithdrawal, deleteWithdrawal } from './withdrawalsRepo';
+import { subCategoryBreakdown } from '@/features/transactions/compute';
 import styles from './JarDetailPage.module.css';
 
 export function JarDetailPage() {
@@ -42,7 +43,7 @@ export function JarDetailPage() {
   const calm = a11y.includes('calm');
 
   const { data: jars } = useRxQuery<Jar>(() => db.jars.find(), [db]);
-  const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
+  const { inc } = useMonthlyIncome();
   const { data: txns } = useRxQuery<Transaction>(() => db.transactions.find(), [db]);
   const { data: withdrawals } = useRxQuery<WithdrawalEvent>(
     () => db.withdrawalEvents.find(),
@@ -64,7 +65,6 @@ export function JarDetailPage() {
   // null = let projectGoalDate pick (regression once there's ≥4 months of history)
   const [projMethod, setProjMethod] = useState<ProjectionMethod | null>(null);
 
-  const inc = useMemo(() => monthlyIncome(income), [income]);
 
   if (!jar) {
     return (
@@ -111,6 +111,10 @@ export function JarDetailPage() {
           })),
         );
   const timelineHasHistory = hasTimelineHistory(timelinePoints);
+  // Only meaningful once the jar has sub-categories to split by.
+  const breakdown = subs.some((s) => s.jarId === jar.id)
+    ? subCategoryBreakdown(jar.id, subs, txns)
+    : [];
 
   async function submitWithdrawal() {
     const parsed = parseAmountInput(amount);
@@ -184,6 +188,34 @@ export function JarDetailPage() {
               locale={locale}
             />
           </Sticker>
+
+          {breakdown.length > 0 && (
+            <Sticker tiltSeed={3} style={{ padding: 14 }}>
+              <div className={styles.catHead}>Where it went</div>
+              <div className="stack" style={{ gap: 12 }}>
+                {breakdown.map((r) => {
+                  const pct = Math.round(r.share * 100);
+                  return (
+                    <div key={r.subCategoryId ?? 'none'}>
+                      <div className={styles.catRow}>
+                        <span>{r.name}</span>
+                        <span className={styles.catAmt}>
+                          {money(r.minor)} · {pct}%
+                        </span>
+                      </div>
+                      <ProgressBar
+                        value={r.share}
+                        fill={fill}
+                        height={6}
+                        label={`${r.name}: ${money(r.minor)}, ${pct}% of this month`}
+                      />
+                      <span className={styles.catPrev}>{money(r.prevMinor)} last month</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Sticker>
+          )}
 
           <h2 className="screen-title" style={{ fontSize: 'var(--step-title)' }}>
             This month

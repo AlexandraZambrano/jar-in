@@ -2,12 +2,13 @@ import { Link } from 'react-router-dom';
 import { useDb } from '@/db/RxdbProvider';
 import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
-import type { IncomeSource, Wallet } from '@/db/schemas';
+import type { Wallet } from '@/db/schemas';
 import { Sticker } from '@/components/Sticker';
 import { Icon } from '@/components/icons';
 import { formatMoney } from '@/lib/money';
-import { monthlyIncome } from '@/features/dashboard/compute';
+import { fxNote } from '@/features/dashboard/compute';
 import { setIncomeActive } from './incomeRepo';
+import { useMonthlyIncome } from './useMonthlyIncome';
 
 const FREQ_LABEL: Record<string, string> = {
   monthly: '/ month',
@@ -20,23 +21,24 @@ const FREQ_LABEL: Record<string, string> = {
 export function IncomePage() {
   const db = useDb();
   const locale = APP_LOCALE;
-  const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
+  const { inc, home, income } = useMonthlyIncome();
   const { data: wallets } = useRxQuery<Wallet>(() => db.wallets.find(), [db]);
   const walletName = (wid: string) => wallets.find((w) => w.id === wid)?.name ?? '—';
 
-  const inc = monthlyIncome(income);
+  const note = fxNote(inc);
 
   return (
     <div className="screen">
       <header className="screen-head">
         <h1 className="screen-title">Income</h1>
         <span className="chip chip--ok">
-          {formatMoney(inc.minor, income[0]?.currency ?? 'EUR', locale)} / mo
+          {formatMoney(inc.minor, home, locale)} / mo
         </span>
       </header>
       <p className="muted">
         Every jar is funded from the sum of your active recurring income.
       </p>
+      {note && <p className="muted">{note}</p>}
 
       <div className="stack">
         {income.map((s, i) => (
