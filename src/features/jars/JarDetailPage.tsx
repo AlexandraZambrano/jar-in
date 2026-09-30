@@ -30,6 +30,7 @@ import { resolveJarColors } from './jarPalette';
 import { buildBalanceTimeline, hasTimelineHistory } from './timeline';
 import { BalanceTimeline } from './BalanceTimeline';
 import { createWithdrawal, deleteWithdrawal } from './withdrawalsRepo';
+import { subCategoryBreakdown } from '@/features/transactions/compute';
 import styles from './JarDetailPage.module.css';
 
 export function JarDetailPage() {
@@ -110,6 +111,10 @@ export function JarDetailPage() {
           })),
         );
   const timelineHasHistory = hasTimelineHistory(timelinePoints);
+  // Only meaningful once the jar has sub-categories to split by.
+  const breakdown = subs.some((s) => s.jarId === jar.id)
+    ? subCategoryBreakdown(jar.id, subs, txns)
+    : [];
 
   async function submitWithdrawal() {
     const parsed = parseAmountInput(amount);
@@ -183,6 +188,34 @@ export function JarDetailPage() {
               locale={locale}
             />
           </Sticker>
+
+          {breakdown.length > 0 && (
+            <Sticker tiltSeed={3} style={{ padding: 14 }}>
+              <div className={styles.catHead}>Where it went</div>
+              <div className="stack" style={{ gap: 12 }}>
+                {breakdown.map((r) => {
+                  const pct = Math.round(r.share * 100);
+                  return (
+                    <div key={r.subCategoryId ?? 'none'}>
+                      <div className={styles.catRow}>
+                        <span>{r.name}</span>
+                        <span className={styles.catAmt}>
+                          {money(r.minor)} · {pct}%
+                        </span>
+                      </div>
+                      <ProgressBar
+                        value={r.share}
+                        fill={fill}
+                        height={6}
+                        label={`${r.name}: ${money(r.minor)}, ${pct}% of this month`}
+                      />
+                      <span className={styles.catPrev}>{money(r.prevMinor)} last month</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Sticker>
+          )}
 
           <h2 className="screen-title" style={{ fontSize: 'var(--step-title)' }}>
             This month

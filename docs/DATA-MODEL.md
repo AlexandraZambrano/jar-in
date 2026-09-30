@@ -190,6 +190,12 @@ Balances are derived on read from a real **allocation ledger** (feature
   can't be blown out; the delta is unchanged. `hasTimelineHistory()` is
   false — and the chart shows a "fills in as months pass" note instead —
   until an accrual has posted or the window is ≥ 28 days.
+- **Sub-category breakdown** (`transactions/compute.ts` —
+  `subCategoryBreakdown(jarId, subs, txns, ref?)`) = this month's
+  transactions for a jar grouped by `subCategoryId`, each with its share
+  of the month and last month's total. Untagged spend, or a
+  `subCategoryId` that isn't one of this jar's, groups as
+  "Uncategorised" (feature 0015).
 - **Plan health** = `Σ jar.percentage`. `= 100` balanced; `≠ 100`
   surfaces an actionable coach note (rule-based in v1; AI-worded in Phase 3).
 - **Projections** (`projections/project.ts`) are fully derived — nothing
