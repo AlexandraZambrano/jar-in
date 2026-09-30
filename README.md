@@ -80,6 +80,10 @@ compose — dark + colour-blind-safe + calm is a valid combination):
 |---|---|---|
 | ![Accumulation jar detail](docs/screenshots/jar-detail-accumulation.png) | ![Jar detail with a withdrawal](docs/screenshots/jar-detail-withdrawal.png) | ![Insights — projected goal dates](docs/screenshots/insights-light.png) |
 
+| Where it went — spend by sub-category |
+|---|
+| ![Flow jar detail with the sub-category breakdown](docs/screenshots/jar-detail-breakdown.png) |
+
 | CSV import — column mapping | CSV import — preview |
 |---|---|
 | ![CSV import column mapping](docs/screenshots/import-csv-map.png) | ![CSV import preview](docs/screenshots/import-csv-preview.png) |

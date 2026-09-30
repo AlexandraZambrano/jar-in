@@ -5,6 +5,28 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-09-30 — 0015 sub-category analytics (issue #4)
+
+Transactions have carried an optional sub-category since 0005, but
+nothing read it back except a label in the list.
+
+**Added**
+
+- `subCategoryBreakdown(jarId, subs, txns, ref?)` in
+  `transactions/compute.ts` — this month's spend per sub-category, share
+  of the month, and last month alongside; untagged (or another jar's
+  sub-category) → "Uncategorised"; empty-in-both rows dropped. Pure, so
+  the Phase 3 narration can reuse it.
+- *Where it went* card on the flow jar detail, shown once the jar has
+  sub-categories and there's spend this month or last.
+- `jar-detail-breakdown.png` in the README.
+
+**Verified:** 103 unit tests; preview build with tagged spend across two
+months shows the expected split and last-month figures.
+
+**Phase 2 feature work is done** — #2, #3, #4 are in review as stacked
+PRs (#5 → #7 → #8).
+
 ## 2026-09-30 — 0014 multi-currency rollup (issue #3)
 
 **Why:** income sources can be in any currency, but `monthlyIncome`

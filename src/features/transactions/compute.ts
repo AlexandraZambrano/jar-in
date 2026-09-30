@@ -1,5 +1,5 @@
-import type { Transaction } from '@/db/schemas';
-import { todayISO } from '@/lib/date';
+import type { SubCategory, Transaction } from '@/db/schemas';
+import { addMonths, monthKey, todayISO } from '@/lib/date';
 import { APP_LOCALE } from '@/lib/locale';
 
 export function isUnassigned(txn: Transaction, activeJarIds: Set<string>): boolean {
@@ -60,4 +60,51 @@ export function groupByDay(
       totalMinor: items.reduce((s, t) => s + t.amountMinor, 0),
       items: [...items].sort((x, y) => (x.createdAt < y.createdAt ? 1 : -1)),
     }));
+}
+
+export interface SubCategoryRow {
+  /** null = Uncategorised */
+  subCategoryId: string | null;
+  name: string;
+  /** spent this month */
+  minor: number;
+  /** of this month's spend on the jar, 0..1 */
+  share: number;
+  /** spent last month */
+  prevMinor: number;
+}
+
+/** A jar's spend this month by sub-category — largest first — with last
+ *  month alongside. Untagged spend, or a sub-category that isn't this jar's
+ *  (a transaction moved between jars), rolls up as "Uncategorised". Rows
+ *  empty in both months are dropped. */
+export function subCategoryBreakdown(
+  jarId: string,
+  subs: SubCategory[],
+  txns: Transaction[],
+  ref: string = todayISO(),
+): SubCategoryRow[] {
+  const thisMonth = monthKey(ref);
+  const lastMonth = monthKey(addMonths(ref, -1));
+  const names = new Map(subs.filter((s) => s.jarId === jarId).map((s) => [s.id, s.name]));
+  const rows = new Map<string | null, SubCategoryRow>();
+
+  for (const t of txns) {
+    if (t.jarId !== jarId) continue;
+    const month = monthKey(t.date);
+    if (month !== thisMonth && month !== lastMonth) continue;
+    const id = t.subCategoryId && names.has(t.subCategoryId) ? t.subCategoryId : null;
+    let row = rows.get(id);
+    if (!row) {
+      row = { subCategoryId: id, name: id ? names.get(id)! : 'Uncategorised', minor: 0, share: 0, prevMinor: 0 };
+      rows.set(id, row);
+    }
+    if (month === thisMonth) row.minor += t.amountMinor;
+    else row.prevMinor += t.amountMinor;
+  }
+
+  const total = [...rows.values()].reduce((s, r) => s + r.minor, 0);
+  return [...rows.values()]
+    .map((r) => ({ ...r, share: total > 0 ? r.minor / total : 0 }))
+    .sort((a, b) => b.minor - a.minor || b.prevMinor - a.prevMinor);
 }

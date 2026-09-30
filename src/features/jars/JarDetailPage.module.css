@@ -81,3 +81,26 @@
   color: var(--danger);
   background: var(--surface);
 }
+
+/* "Where it went" — sub-category breakdown (feature 0015) */
+.catHead {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.catRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.catAmt {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.catPrev {
+  display: block;
+  margin-top: 3px;
+  font-size: var(--step-caption);
+  color: var(--ink-soft);
+}
