@@ -10,6 +10,7 @@ import { addMonths } from '@/lib/date';
 import {
   accumulationBalanceMinor,
   coachMessage,
+  fxNote,
   computeJar,
   flowRunningBalanceMinor,
   flowSpentThisMonthMinor,
@@ -90,30 +91,58 @@ function txn(partial: Partial<Transaction>): Transaction {
 
 describe('monthlyIncome', () => {
   it('normalises frequencies to a monthly figure', () => {
-    const r = monthlyIncome([
-      income({ id: 'a', amountMinor: 240000, frequency: 'monthly' }),
-      income({ id: 'b', amountMinor: 120000, frequency: 'yearly' }),
-      income({ id: 'c', amountMinor: 10000, frequency: 'weekly' }),
-    ]);
+    const r = monthlyIncome(
+      [
+        income({ id: 'a', amountMinor: 240000, frequency: 'monthly' }),
+        income({ id: 'b', amountMinor: 120000, frequency: 'yearly' }),
+        income({ id: 'c', amountMinor: 10000, frequency: 'weekly' }),
+      ],
+      'EUR',
+      {},
+    );
     // 240000 + 10000 + round(10000 * 52/12)
     expect(r.minor).toBe(240000 + 10000 + Math.round(10000 * (52 / 12)));
   });
 
   it('excludes inactive and one-off sources but flags the one-off', () => {
-    const r = monthlyIncome([
-      income({ id: 'a', amountMinor: 100000, active: false }),
-      income({ id: 'b', amountMinor: 50000, frequency: 'once' }),
-    ]);
+    const r = monthlyIncome(
+      [
+        income({ id: 'a', amountMinor: 100000, active: false }),
+        income({ id: 'b', amountMinor: 50000, frequency: 'once' }),
+      ],
+      'EUR',
+      {},
+    );
     expect(r.minor).toBe(0);
     expect(r.hasOnce).toBe(true);
   });
 
-  it('detects mixed currencies', () => {
-    const r = monthlyIncome([
-      income({ id: 'a', amountMinor: 100000, currency: 'EUR' }),
-      income({ id: 'b', amountMinor: 100000, currency: 'USD' }),
-    ]);
-    expect(r.mixedCurrency).toBe(true);
+  it('converts foreign income into the home currency instead of summing raw', () => {
+    const r = monthlyIncome(
+      [
+        income({ id: 'a', amountMinor: 100000, currency: 'EUR' }),
+        income({ id: 'b', amountMinor: 100000, currency: 'USD' }),
+      ],
+      'EUR',
+      { USD: 1.25 },
+    );
+    expect(r.minor).toBe(100000 + 80000); // €1,000 + $1,000 at 1.25 → €1,800
+    expect(r.converted).toEqual(['USD']);
+    expect(r.unconverted).toEqual([]);
+  });
+
+  it('leaves out (and lists) a currency with no rate', () => {
+    const r = monthlyIncome(
+      [
+        income({ id: 'a', amountMinor: 100000, currency: 'EUR' }),
+        income({ id: 'b', amountMinor: 100000, currency: 'COP' }),
+      ],
+      'EUR',
+      {},
+    );
+    expect(r.minor).toBe(100000);
+    expect(r.unconverted).toEqual(['COP']);
+    expect(fxNote(r)).toMatch(/No exchange rate yet for COP/);
   });
 });
 

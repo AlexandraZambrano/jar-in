@@ -1,6 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { currencyDecimals, formatMoney, fromMinor, parseAmountInput, toMinor } from './money';
+import {
+  convertMinor,
+  currencyDecimals,
+  formatMoney,
+  fromMinor,
+  parseAmountInput,
+  toMinor,
+} from './money';
 import { monthLabel } from './date';
+
+describe('convertMinor', () => {
+  // EUR-based: 1 EUR = 1.25 USD = 160 JPY
+  const rates = { USD: 1.25, JPY: 160 };
+
+  it('is the identity for the same currency, even with no rates', () => {
+    expect(convertMinor(12345, 'EUR', 'EUR', {})).toBe(12345);
+  });
+  it('converts into the base currency', () => {
+    expect(convertMinor(100_000, 'USD', 'EUR', rates)).toBe(80_000); // $1,000 → €800
+  });
+  it('handles differing decimals (JPY has none)', () => {
+    expect(convertMinor(16_000, 'JPY', 'EUR', rates)).toBe(10_000); // ¥16,000 → €100
+  });
+  it('is null when there is no rate', () => {
+    expect(convertMinor(100, 'COP', 'EUR', rates)).toBeNull();
+  });
+});
 
 describe('money', () => {
   it('knows zero-decimal currencies', () => {

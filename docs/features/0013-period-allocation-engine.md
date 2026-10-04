@@ -94,3 +94,11 @@ sites pass the jar's allocation events through.
     €1,200/mo but keeps the balance at €4,200 (the old model would have
     jumped to €7,200); a full reload posts nothing new (10 ledger rows =
     5 × €600 + 5 × €360).
+- **2026-09-29** — race fix (before merge). Two concurrent syncs — React
+  StrictMode's double effect in `npm run dev`, or two open tabs
+  (`multiInstance`) — each read "0 posted" and double-posted any month
+  that was due. Allocation ids are now deterministic (`<jarId>_<date>`)
+  and written with `bulkInsert`, so a second writer collides on the
+  primary key (reported in `.error`, not thrown; first writer wins, a
+  posted amount is never overwritten). New test runs two syncs in
+  parallel: 6 rows before the fix, 3 after. 89 unit tests.

@@ -1,7 +1,7 @@
 import type { JarInDatabase } from '@/db/database';
 import { addMonths, nowISO, todayISO, wholeMonthsBetween } from '@/lib/date';
-import { newId } from '@/lib/id';
 import { jarPlannedMinor, monthlyIncome } from '@/features/dashboard/compute';
+import { homeCurrency, ratesFor } from '@/features/income/fxRepo';
 
 /** Posts one allocation event per whole month a jar has been live and hasn't
  *  been credited for yet, valued at the jar's planned amount *right now* —
@@ -12,11 +12,24 @@ export async function syncAllocationEvents(
   db: JarInDatabase,
   ref: string = todayISO(),
 ): Promise<void> {
-  const [jars, income] = await Promise.all([
+  const home = await homeCurrency(db);
+  const [jars, income, fx] = await Promise.all([
     db.jars.find().exec(),
     db.incomeSources.find().exec(),
+    db.fxRates.find({ selector: { baseCurrency: home } }).exec(),
   ]);
-  const monthlyIncomeMinor = monthlyIncome(income.map((d) => d.toJSON())).minor;
+  const inc = monthlyIncome(
+    income.map((d) => d.toJSON()),
+    home,
+    ratesFor(
+      fx.map((d) => d.toJSON()),
+      home,
+    ),
+  );
+  // A foreign income source with no rate yet would freeze this month's posts
+  // at a total that's missing it — wait; the sync after rates arrive catches up.
+  if (inc.unconverted.length) return;
+  const monthlyIncomeMinor = inc.minor;
   if (monthlyIncomeMinor <= 0) return;
 
   for (const doc of jars) {
@@ -28,9 +41,8 @@ export async function syncAllocationEvents(
     if (plannedMinor <= 0) continue;
 
     const existing = await db.allocationEvents.find({ selector: { jarId: jar.id } }).exec();
-    // ponytail: derives "months already posted" from the latest posted date
-    // rather than trusting existing.length, so a stray gap self-heals —
-    // still assumes this function is the collection's only writer.
+    // "Months already posted" comes from the latest posted date rather than
+    // existing.length, so a stray gap self-heals.
     const postedMonths = existing.reduce(
       (max, e) => Math.max(max, wholeMonthsBetween(jar.startedAt, e.date)),
       0,
@@ -38,16 +50,23 @@ export async function syncAllocationEvents(
     if (dueMonths <= postedMonths) continue;
 
     const ts = nowISO();
+    const docs = [];
     for (let m = postedMonths + 1; m <= dueMonths; m++) {
-      await db.allocationEvents.insert({
-        id: newId(),
+      const date = addMonths(jar.startedAt, m);
+      docs.push({
+        // Deterministic id: a concurrent run (StrictMode's double effect, a
+        // second tab) collides on the primary key instead of double-posting.
+        id: `${jar.id}_${date}`,
         jarId: jar.id,
         amountMinor: plannedMinor,
         currency: jar.currency,
-        date: addMonths(jar.startedAt, m),
+        date,
         createdAt: ts,
         updatedAt: ts,
       });
     }
+    // bulkInsert reports conflicts in `.error` instead of throwing — the
+    // first writer wins, so a posted amount is never overwritten.
+    await db.allocationEvents.bulkInsert(docs);
   }
 }
