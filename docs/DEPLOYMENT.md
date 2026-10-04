@@ -147,9 +147,10 @@ Work is tracked on the [Jars project board](https://github.com/users/AlexandraZa
       (`main` + `feat/v1-phase-1`). Actions runs `ci.yml` on every push.
 - [x] Coolify app configured — `Jar-in` in the `Alex projects` project,
       Dockerfile build pack, port `80`, domain `jars.alexzambrano.com`.
-      Deployed and healthy (2026-09-18). DNS **A record for
-      `jars.alexzambrano.com` → the Hetzner server IP** still needs
-      adding for the real domain to resolve (Coolify's own sslip.io
-      domain works without it, in case you need it for a quick check).
-- [ ] Branch protection on `main`: both CI jobs green before merge, no
-      direct pushes (repo admin).
+      Deployed and healthy (2026-09-18). DNS already resolves to the
+      Hetzner server (same IP as `alexzambrano.com`) — nothing to add.
+- [x] Branch protection on `main` (2026-09-30, issue #1): a PR is
+      required (0 approvals, so solo merges work); **check + build** and
+      **e2e (Playwright)** must pass on an up-to-date branch (strict);
+      applies to admins too; no force-pushes, no deletion. Release flow is
+      `dev` → PR → `main`.
