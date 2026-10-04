@@ -1,6 +1,11 @@
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import type { IncomeFrequency } from '@/db/schemas';
-import { isSameMonth, nowISO, wholeMonthsBetween } from '@/lib/date';
+import { isSameMonth, nowISO } from '@/lib/date';
+import { convertMinor } from '@/lib/money';
+
+function sumForJar(jarId: string, events: { jarId: string; amountMinor: number }[]): number {
+  return events.filter((e) => e.jarId === jarId).reduce((s, e) => s + e.amountMinor, 0);
+}
 
 const MONTHLY_FACTOR: Record<IncomeFrequency, number> = {
   monthly: 1,
@@ -11,24 +16,46 @@ const MONTHLY_FACTOR: Record<IncomeFrequency, number> = {
 };
 
 export interface MonthlyIncome {
+  /** In the home currency. */
   minor: number;
-  currencies: string[];
-  mixedCurrency: boolean;
+  /** Foreign currencies included via an FX rate. */
+  converted: string[];
+  /** Foreign currencies with no rate yet — left out of `minor`. */
+  unconverted: string[];
   hasOnce: boolean;
 }
 
-export function monthlyIncome(sources: IncomeSource[]): MonthlyIncome {
+/** Active recurring income per month, in `home`. Foreign sources convert at
+ *  `rates` (home-based, see `convertMinor`); ones with no rate are left out
+ *  and listed in `unconverted` rather than summed raw. */
+export function monthlyIncome(
+  sources: IncomeSource[],
+  home: string,
+  rates: Record<string, number>,
+): MonthlyIncome {
   const active = sources.filter((s) => s.active);
-  const recurring = active.filter((s) => s.frequency !== 'once');
-  const currencies = [...new Set(recurring.map((s) => s.currency))];
-  const minor = recurring.reduce(
-    (sum, s) => sum + Math.round(s.amountMinor * MONTHLY_FACTOR[s.frequency]),
-    0,
-  );
+  const converted = new Set<string>();
+  const unconverted = new Set<string>();
+  let minor = 0;
+  for (const s of active) {
+    if (s.frequency === 'once') continue;
+    const inHome = convertMinor(
+      Math.round(s.amountMinor * MONTHLY_FACTOR[s.frequency]),
+      s.currency,
+      home,
+      rates,
+    );
+    if (inHome == null) {
+      unconverted.add(s.currency);
+      continue;
+    }
+    minor += inHome;
+    if (s.currency !== home) converted.add(s.currency);
+  }
   return {
     minor,
-    currencies,
-    mixedCurrency: currencies.length > 1,
+    converted: [...converted],
+    unconverted: [...unconverted],
     hasOnce: active.some((s) => s.frequency === 'once'),
   };
 }
@@ -49,31 +76,24 @@ export function flowSpentThisMonthMinor(
 
 export function accumulationBalanceMinor(
   jar: Jar,
-  plannedPerMonthMinor: number,
+  allocations: AllocationEvent[],
   withdrawals: WithdrawalEvent[],
-  ref: string = nowISO(),
 ): number {
-  const months = wholeMonthsBetween(jar.startedAt, ref);
-  const contributed = jar.openingBalanceMinor + months * plannedPerMonthMinor;
-  const withdrawn = withdrawals
-    .filter((w) => w.jarId === jar.id)
-    .reduce((s, w) => s + w.amountMinor, 0);
+  const contributed = jar.openingBalanceMinor + sumForJar(jar.id, allocations);
+  const withdrawn = sumForJar(jar.id, withdrawals);
   return Math.max(0, contributed - withdrawn);
 }
 
-/** Flow jar treated as a running account: opening + each month's cap credited,
- *  every transaction debited. How far ahead/behind you are over time. */
+/** Flow jar treated as a running account: opening + every posted allocation
+ *  credited, every transaction debited. How far ahead/behind you are over
+ *  time. */
 export function flowRunningBalanceMinor(
   jar: Jar,
-  plannedPerMonthMinor: number,
+  allocations: AllocationEvent[],
   transactions: Transaction[],
-  ref: string = nowISO(),
 ): number {
-  const months = wholeMonthsBetween(jar.startedAt, ref);
-  const credited = jar.openingBalanceMinor + months * plannedPerMonthMinor;
-  const spent = transactions
-    .filter((t) => t.jarId === jar.id)
-    .reduce((s, t) => s + t.amountMinor, 0);
+  const credited = jar.openingBalanceMinor + sumForJar(jar.id, allocations);
+  const spent = sumForJar(jar.id, transactions);
   return Math.max(0, credited - spent);
 }
 
@@ -103,6 +123,7 @@ export function computeJar(
   monthlyIncomeMinor: number,
   transactions: Transaction[],
   withdrawals: WithdrawalEvent[],
+  allocations: AllocationEvent[] = [],
   ref: string = nowISO(),
 ): JarComputed {
   const plannedMinor = jarPlannedMinor(jar, monthlyIncomeMinor);
@@ -119,7 +140,7 @@ export function computeJar(
       goalMet: false,
     };
   }
-  const actualMinor = accumulationBalanceMinor(jar, plannedMinor, withdrawals, ref);
+  const actualMinor = accumulationBalanceMinor(jar, allocations, withdrawals);
   const targetMinor = jar.targetAmountMinor;
   const ratio = targetMinor && targetMinor > 0 ? actualMinor / targetMinor : 0;
   return {
@@ -131,6 +152,20 @@ export function computeJar(
     over: false,
     goalMet: !!targetMinor && actualMinor >= targetMinor,
   };
+}
+
+/** One line on how foreign income was handled, or null when there was none. */
+export function fxNote(inc: MonthlyIncome): string | null {
+  const parts: string[] = [];
+  if (inc.converted.length) {
+    parts.push(`Includes ${inc.converted.join(', ')} income at today’s ECB rate.`);
+  }
+  if (inc.unconverted.length) {
+    parts.push(
+      `No exchange rate yet for ${inc.unconverted.join(', ')} — that income is left out of the total until you’re online.`,
+    );
+  }
+  return parts.length ? parts.join(' ') : null;
 }
 
 export interface CoachNotable {

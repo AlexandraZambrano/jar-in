@@ -90,4 +90,5 @@ export async function wipeForRestart(db: JarInDatabase): Promise<void> {
   await db.subCategories.find().remove();
   await db.jars.find().remove();
   await db.withdrawalEvents.find().remove();
+  await db.allocationEvents.find().remove();
 }

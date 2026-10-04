@@ -34,7 +34,9 @@ behaviour checks kept as a runnable suite.
 - **CI = GitHub Actions** (`.github/workflows/ci.yml`), Node 24, two
   jobs: `check + build` (uploads `dist/`), then `e2e` (needs `check`,
   caches the Playwright browser download keyed on the resolved
-  version). Triggers on push to any branch and PRs to `main`.
+  version). Triggers on push to `main` / `dev` and PRs into either (amended
+  2026-09-29 when the `dev` branch was added — feature branches are
+  covered by their PR, avoiding a duplicate push run).
 - **`playwright` and `@playwright/test` are pinned to the exact same
   version** — a mismatch between them is a known footgun.
 - **Deploy** is unchanged from SPEC §12: Coolify builds `dist/` from a

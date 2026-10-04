@@ -6,7 +6,7 @@ import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
 import { formatMoney } from '@/lib/money';
 import { monthLabel } from '@/lib/date';
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import { CoachNote } from '@/components/CoachNote';
 import { AllocationDonut, type DonutSegment } from '@/components/AllocationDonut';
 import { resolveJarColors } from '@/features/jars/jarPalette';
@@ -18,12 +18,8 @@ import {
 } from '@/features/projections/tracker';
 import type { IconName } from '@/components/icons';
 import { JarCard } from './JarCard';
-import {
-  coachMessage,
-  computeJar,
-  monthlyIncome,
-  planHealth,
-} from './compute';
+import { useMonthlyIncome } from '@/features/income/useMonthlyIncome';
+import { coachMessage, computeJar, fxNote, planHealth } from './compute';
 
 export function DashboardPage() {
   const db = useDb();
@@ -34,10 +30,14 @@ export function DashboardPage() {
   const locale = APP_LOCALE;
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
-  const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
+  const { inc, home: currency } = useMonthlyIncome();
   const { data: txns } = useRxQuery<Transaction>(() => db.transactions.find(), [db]);
   const { data: withdrawals } = useRxQuery<WithdrawalEvent>(
     () => db.withdrawalEvents.find(),
+    [db],
+  );
+  const { data: allocations } = useRxQuery<AllocationEvent>(
+    () => db.allocationEvents.find(),
     [db],
   );
 
@@ -46,13 +46,12 @@ export function DashboardPage() {
     [jarsRaw],
   );
 
-  const inc = useMemo(() => monthlyIncome(income), [income]);
   const health = useMemo(() => planHealth(jars), [jars]);
-  const currency = jars[0]?.currency ?? 'EUR';
+  const incomeNote = fxNote(inc);
 
   const computed = useMemo(
-    () => jars.map((jar) => computeJar(jar, inc.minor, txns, withdrawals)),
-    [jars, inc.minor, txns, withdrawals],
+    () => jars.map((jar) => computeJar(jar, inc.minor, txns, withdrawals, allocations)),
+    [jars, inc.minor, txns, withdrawals, allocations],
   );
 
   // Deterministic goal-date projections for accumulation jars. Recomputed
@@ -65,7 +64,7 @@ export function DashboardPage() {
       computed
         .filter((c) => c.jar.type === 'accumulation')
         .map((c) => {
-          const series = monthlyBalanceSeries(c.jar, c.plannedMinor, withdrawals);
+          const series = monthlyBalanceSeries(c.jar, allocations, withdrawals);
           const p = projectGoalDate(c.jar, series, c.plannedMinor);
           return {
             jarId: c.jar.id,
@@ -73,7 +72,7 @@ export function DashboardPage() {
             monthsRemaining: p ? p.monthsRemaining : null,
           };
         }),
-    [computed, withdrawals],
+    [computed, withdrawals, allocations],
   );
 
   const [notable, setNotable] = useState<NotableChange | null>(() => getNotableChange());
@@ -120,12 +119,7 @@ export function DashboardPage() {
           jars fill up.
         </p>
       )}
-      {inc.mixedCurrency && (
-        <p className="muted">
-          Income is in more than one currency — conversion arrives in Phase 2, so the
-          total above only adds up matching currencies.
-        </p>
-      )}
+      {incomeNote && <p className="muted">{incomeNote}</p>}
 
       {segments.length > 0 && (
         <AllocationDonut

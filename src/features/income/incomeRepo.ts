@@ -3,6 +3,7 @@ import type { IncomeFrequency } from '@/db/schemas';
 import { newId } from '@/lib/id';
 import { nowISO } from '@/lib/date';
 import { emitReprojection } from '@/lib/reprojection';
+import { syncFxRates } from './fxRepo';
 
 export interface IncomeInput {
   name: string;
@@ -31,6 +32,7 @@ export async function createIncome(
     updatedAt: ts,
   });
   emitReprojection('income-added');
+  void syncFxRates(db); // a new foreign-currency source needs a rate
   return id;
 }
 
@@ -51,6 +53,7 @@ export async function updateIncome(
     updatedAt: nowISO(),
   });
   emitReprojection('income-changed');
+  void syncFxRates(db); // the currency may have changed
 }
 
 export async function setIncomeActive(

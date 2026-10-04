@@ -17,11 +17,15 @@ a cached FX table (Phase 2).
 - All parsing/formatting goes through `src/lib/money.ts`
   (`toMinor`, `fromMinor`, `formatMoney`, `addMinor`) using
   `Intl.NumberFormat`.
-- v1 assumes **one currency** across a user's data for computed rollups.
-  If income sources or transactions mix currencies, compute per-currency
-  and show a "mixed currencies — conversion arrives in Phase 2" notice
-  rather than guessing a rate.
-- `fxRates` schema exists from v0 but is unused in v1.
+- All computed rollups run in one **home currency** — the jars' currency.
+  Foreign-currency income converts into it at a cached ECB rate
+  (Frankfurter, refreshed at most daily, only when foreign income
+  exists). A currency with no rate is left out and called out in the UI —
+  never summed raw and never guessed. *(Amended 2026-09-30, feature 0014;
+  was "compute per-currency and show a notice until Phase 2".)*
+- The ledger is never converted on write: income sources keep their own
+  currency. The allocation ledger (0013) freezes each month's converted
+  amount when it posts, which is what keeps history stable as rates move.
 - Currency decimal digits: default 2; a small override table for known
   exceptions (JPY 0, etc.) lives in `money.ts`. Extend as needed.
 - **The UI is English-only.** All money and date formatting uses a fixed

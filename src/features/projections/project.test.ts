@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Jar, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, Jar, WithdrawalEvent } from '@/db/schemas';
+import { addMonths } from '@/lib/date';
 import { monthlyBalanceSeries, projectGoalDate } from './project';
 
 const ts = '2026-01-01T00:00:00.000Z';
@@ -34,20 +35,37 @@ const wd = (p: Partial<WithdrawalEvent>): WithdrawalEvent => ({
   ...p,
 });
 
+/** `n` monthly allocation posts of `amountMinor` after 2026-01-01, as the engine writes them. */
+const posts = (n: number, amountMinor: number): AllocationEvent[] =>
+  Array.from({ length: n }, (_, i) => ({
+    id: `a${i}`,
+    jarId: 'j',
+    amountMinor,
+    currency: 'EUR',
+    date: addMonths('2026-01-01', i + 1),
+    createdAt: ts,
+    updatedAt: ts,
+  }));
+
 describe('monthlyBalanceSeries', () => {
   it('has one point per whole month and ends at the current balance', () => {
-    const s = monthlyBalanceSeries(jar({ openingBalanceMinor: 100_000 }), 50_000, [], '2026-05-01');
+    const s = monthlyBalanceSeries(jar({ openingBalanceMinor: 100_000 }), posts(4, 50_000), [], '2026-05-01');
     expect(s).toEqual([100_000, 150_000, 200_000, 250_000, 300_000]);
   });
   it('applies withdrawals from the month they occur', () => {
     const s = monthlyBalanceSeries(
       jar({ openingBalanceMinor: 0 }),
-      50_000,
+      posts(4, 50_000),
       [wd({ id: 'w1', amountMinor: 40_000, date: '2026-03-10' })],
       '2026-05-01',
     );
     // months 0..4: 0, 50k, 100k, 150k-40k=110k, 160k
     expect(s).toEqual([0, 50_000, 100_000, 110_000, 160_000]);
+  });
+  it('samples each month at the amount actually posted, not a constant', () => {
+    const mixed = [...posts(2, 10_000), ...posts(4, 30_000).slice(2).map((a, i) => ({ ...a, id: `b${i}` }))];
+    const s = monthlyBalanceSeries(jar({ openingBalanceMinor: 0 }), mixed, [], '2026-05-01');
+    expect(s).toEqual([0, 10_000, 20_000, 50_000, 80_000]);
   });
 });
 

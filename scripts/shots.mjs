@@ -169,13 +169,15 @@ for (const s of MODES) {
   await page.goto(`${BASE}/add`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
   const entries = [
-    { jar: 'Essentials', digits: ['1', '8', '0'], note: 'Groceries' },
-    { jar: 'Essentials', digits: ['4', '5'], note: 'Energy bill' },
+    { jar: 'Essentials', digits: ['1', '8', '0'], note: 'Groceries', sub: 'Groceries' },
+    { jar: 'Essentials', digits: ['4', '5'], note: 'Energy bill', sub: 'Energy' },
+    { jar: 'Essentials', digits: ['2', '5'], note: 'Pharmacy' },
     { jar: 'Joy-jar', digits: ['6', '2'], note: 'Cinema' },
   ];
   for (const e of entries) {
     await page.getByRole('radio', { name: e.jar }).click();
     for (const d of e.digits) await page.getByRole('button', { name: d, exact: true }).click();
+    if (e.sub) await page.getByLabel('Sub-category (optional)').selectOption({ label: e.sub });
     await page.getByLabel('Note (optional)').fill(e.note);
     await page.getByRole('button', { name: 'Save transaction' }).click();
     await page.waitForURL((u) => u.pathname === '/');
@@ -183,6 +185,13 @@ for (const s of MODES) {
     await page.goto(`${BASE}/add`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(400);
   }
+
+  // Essentials now has tagged spend → its detail shows the sub-category breakdown
+  await page.goto(`${BASE}/jars`, { waitUntil: 'networkidle' });
+  await page.getByRole('link', { name: /Essentials/ }).click();
+  await page.waitForURL(/\/jars\/[^/]+$/);
+  await page.waitForTimeout(500);
+  await shoot(page, 'jar-detail-breakdown');
 
   // record a withdrawal on Safe fund so its detail shows a marker + list
   await page.goto(`${BASE}/jars`, { waitUntil: 'networkidle' });

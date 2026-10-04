@@ -1,4 +1,4 @@
-import type { Jar, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, Jar, WithdrawalEvent } from '@/db/schemas';
 import { addMonths, todayISO, wholeMonthsBetween } from '@/lib/date';
 
 export type ProjectionMethod = 'ema' | 'regression';
@@ -18,17 +18,20 @@ export interface Projection {
  *  accumulationBalanceMinor in dashboard/compute.ts). */
 export function monthlyBalanceSeries(
   jar: Jar,
-  plannedPerMonthMinor: number,
+  allocations: AllocationEvent[],
   withdrawals: WithdrawalEvent[],
   ref: string = todayISO(),
 ): number[] {
   const start = jar.startedAt.slice(0, 10);
   const n = wholeMonthsBetween(start, ref);
+  const ja = allocations.filter((a) => a.jarId === jar.id);
   const jw = withdrawals.filter((w) => w.jarId === jar.id);
   const series: number[] = [];
   for (let k = 0; k <= n; k++) {
     const asOf = addMonths(start, k);
-    const contributed = jar.openingBalanceMinor + k * plannedPerMonthMinor;
+    const contributed =
+      jar.openingBalanceMinor +
+      ja.filter((a) => a.date.slice(0, 10) <= asOf).reduce((s, a) => s + a.amountMinor, 0);
     const withdrawn = jw
       .filter((w) => w.date.slice(0, 10) <= asOf)
       .reduce((s, w) => s + w.amountMinor, 0);

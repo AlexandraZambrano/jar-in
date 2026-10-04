@@ -4,12 +4,13 @@ import { useDb } from '@/db/RxdbProvider';
 import { APP_LOCALE } from '@/lib/locale';
 import { useRxQuery } from '@/lib/useRxQuery';
 import { usePreferences } from '@/lib/preferences';
-import type { IncomeSource, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
+import type { AllocationEvent, Jar, Transaction, WithdrawalEvent } from '@/db/schemas';
 import { Sticker } from '@/components/Sticker';
 import { Icon, type IconName } from '@/components/icons';
 import { formatMoney } from '@/lib/money';
 import { monthLabel } from '@/lib/date';
-import { computeJar, monthlyIncome } from '@/features/dashboard/compute';
+import { computeJar } from '@/features/dashboard/compute';
+import { useMonthlyIncome } from '@/features/income/useMonthlyIncome';
 import { resolveJarColors } from '@/features/jars/jarPalette';
 import {
   methodLabel,
@@ -25,10 +26,14 @@ export function InsightsPage() {
   const calm = a11y.includes('calm');
 
   const { data: jarsRaw } = useRxQuery<Jar>(() => db.jars.find(), [db]);
-  const { data: income } = useRxQuery<IncomeSource>(() => db.incomeSources.find(), [db]);
+  const { inc } = useMonthlyIncome();
   const { data: txns } = useRxQuery<Transaction>(() => db.transactions.find(), [db]);
   const { data: withdrawals } = useRxQuery<WithdrawalEvent>(
     () => db.withdrawalEvents.find(),
+    [db],
+  );
+  const { data: allocations } = useRxQuery<AllocationEvent>(
+    () => db.allocationEvents.find(),
     [db],
   );
 
@@ -36,7 +41,6 @@ export function InsightsPage() {
     () => [...jarsRaw].sort((a, b) => a.order - b.order),
     [jarsRaw],
   );
-  const inc = monthlyIncome(income);
   const accumulation = jars.filter((j) => j.type === 'accumulation');
 
   return (
@@ -49,8 +53,8 @@ export function InsightsPage() {
 
       <div className="stack">
         {accumulation.map((jar, i) => {
-          const c = computeJar(jar, inc.minor, txns, withdrawals);
-          const series = monthlyBalanceSeries(jar, c.plannedMinor, withdrawals);
+          const c = computeJar(jar, inc.minor, txns, withdrawals, allocations);
+          const series = monthlyBalanceSeries(jar, allocations, withdrawals);
           const p = projectGoalDate(jar, series, c.plannedMinor);
           const { fill, on } = resolveJarColors(jar.color, { cvd, calm });
           return (

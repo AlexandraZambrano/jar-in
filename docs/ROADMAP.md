@@ -33,9 +33,13 @@ offline, on-device.
 
 ## Phase 2 — Multi-currency & richer jars
 
-- Display-currency rollup with cached FX table (Frankfurter)
-- Period-allocation engine (income actually posts to jars each cycle)
-- Sub-category analytics
+Tracked as GitHub issues on the [Jars project board](https://github.com/users/AlexandraZambrano/projects/11).
+
+| # | Feature | Spec | Issue | Status |
+|---|---|---|---|---|
+| 0013 | Period-allocation engine — income actually posts to jars each cycle | [features/0013-period-allocation-engine.md](features/0013-period-allocation-engine.md) | [#2](https://github.com/AlexandraZambrano/jar-in/issues/2) | 🟡 in review |
+| 0014 | Multi-currency rollup — foreign income converted via cached FX (Frankfurter) | [features/0014-fx-rollup.md](features/0014-fx-rollup.md) | [#3](https://github.com/AlexandraZambrano/jar-in/issues/3) | 🟡 in review |
+| 0015 | Sub-category analytics — where a jar's money went, vs last month | [features/0015-subcategory-analytics.md](features/0015-subcategory-analytics.md) | [#4](https://github.com/AlexandraZambrano/jar-in/issues/4) | 🟡 in review |
 
 ## Phase 3 — AI layer (Groq)
 
@@ -72,3 +76,7 @@ offline, on-device.
 - **2026-09-07** — **CI pipeline ✅** (from DEPLOYMENT.md) — `playwright.config.ts` + `e2e/` suite (9 tests: onboarding, jars incl. opening-balance regression + no-native-dialog delete, transactions, prefs), `npm run e2e` / `e2e:ui`, and `.github/workflows/ci.yml` (Node 24; `check + build` then `e2e`, push to any branch + PRs to main). ADR `decisions/0005-ci-and-deployment.md`. DEPLOYMENT.md → "as built". 81 unit tests.
 - **2026-09-07** — Fixed the flow-jar running-balance chart rendering broken (pre-`startedAt` debit blew out the x-scale; no empty state under one month of history) — `buildBalanceTimeline` clamps event dates to `[start, ref]`, new `hasTimelineHistory()` gates the chart. 81 tests.
 - **2026-09-08** — `scripts/shots.mjs` now fits each screenshot to its real content height (was a fixed 390×1600 viewport → long empty runways). Repo pushed to **github.com/AlexandraZambrano/jar-in** (`main` + `feat/v1-phase-1`); first CI run green. **Next: Coolify deploy prep, then Phase 2 (period-allocation engine).**
+- **2026-09-18** — Deployed to Coolify at **jars.alexzambrano.com** (fixed a Docker healthcheck that hit its own IPv6 loopback).
+- **2026-09-29** — Phase 2 kicked off. Open work moved to GitHub issues #1–#4 on a kanban project board; new `dev` branch — features branch off `dev` and PR back into it. **0013 🟡 period-allocation engine** ([#2](https://github.com/AlexandraZambrano/jar-in/issues/2)): new `allocationEvents` ledger replaces the `months × planned` multiplier, so changing a percentage no longer reprices past months. 88 unit tests, 9 e2e.
+- **2026-09-30** — **0014 🟡 multi-currency rollup** ([#3](https://github.com/AlexandraZambrano/jar-in/issues/3)): `monthlyIncome` summed foreign income raw (USD 1,000 + EUR 1,000 = "2,000"); it now converts into the jars' currency at a cached ECB rate and leaves out (and names) any currency without one. Also fixed a race in 0013 (concurrent syncs double-posted a month). 99 unit tests, 9 e2e.
+- **2026-09-30** — **0015 🟡 sub-category analytics** ([#4](https://github.com/AlexandraZambrano/jar-in/issues/4)): flow jar detail gets a *Where it went* card — this month's spend per sub-category, share of the month, and last month alongside — from a pure `subCategoryBreakdown()` the Phase 3 narration can reuse. 103 unit tests. **Phase 2 feature work complete, pending review/merge of #5, #7, #8.**
