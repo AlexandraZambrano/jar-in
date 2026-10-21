@@ -41,6 +41,24 @@ Tracked as GitHub issues on the [Jars project board](https://github.com/users/Al
 | 0014 | Multi-currency rollup — foreign income converted via cached FX (Frankfurter) | [features/0014-fx-rollup.md](features/0014-fx-rollup.md) | [#3](https://github.com/AlexandraZambrano/jar-in/issues/3) | 🟡 in review |
 | 0015 | Sub-category analytics — where a jar's money went, vs last month | [features/0015-subcategory-analytics.md](features/0015-subcategory-analytics.md) | [#4](https://github.com/AlexandraZambrano/jar-in/issues/4) | 🟡 in review |
 
+## Phase 2b — Bring-your-own Elasticsearch
+
+Opt-in: a user runs Elasticsearch + Kibana in Docker (data on a named
+volume) and Jars keeps its data there, with RxDB as the on-device cache —
+see [ADR 0006](decisions/0006-elasticsearch-as-optional-source-of-truth.md)
+and [spec 0016](features/0016-elasticsearch-connector.md). Built **TDD**.
+Tracked on the [Jars board](https://github.com/users/AlexandraZambrano/jar-in/projects/11).
+
+| # | Task | Issue | Status |
+|---|---|---|---|
+| 1 | Spike — can a browser talk to a local Elasticsearch? (CORS, mixed content) | [#12](https://github.com/AlexandraZambrano/jar-in/issues/12) | ⬜ |
+| 2 | Docker stack — persistent volume + snapshots | [#13](https://github.com/AlexandraZambrano/jar-in/issues/13) | ⬜ |
+| 3 | Elasticsearch client + config | [#14](https://github.com/AlexandraZambrano/jar-in/issues/14) | ⬜ |
+| 4 | Replication — push / pull / conflicts | [#15](https://github.com/AlexandraZambrano/jar-in/issues/15) | ⬜ |
+| 5 | First-connect & restore flow | [#16](https://github.com/AlexandraZambrano/jar-in/issues/16) | ⬜ |
+| 6 | Settings UI — connect, test, status | [#17](https://github.com/AlexandraZambrano/jar-in/issues/17) | ⬜ |
+| 7 | Kibana dashboards + guide | [#18](https://github.com/AlexandraZambrano/jar-in/issues/18) | ⬜ |
+
 ## Phase 3 — AI layer (Groq)
 
 - Onboarding agent, narration/coaching, AI-worded projections & rebalancing
@@ -80,3 +98,4 @@ Tracked as GitHub issues on the [Jars project board](https://github.com/users/Al
 - **2026-09-29** — Phase 2 kicked off. Open work moved to GitHub issues #1–#4 on a kanban project board; new `dev` branch — features branch off `dev` and PR back into it. **0013 🟡 period-allocation engine** ([#2](https://github.com/AlexandraZambrano/jar-in/issues/2)): new `allocationEvents` ledger replaces the `months × planned` multiplier, so changing a percentage no longer reprices past months. 88 unit tests, 9 e2e.
 - **2026-09-30** — **0014 🟡 multi-currency rollup** ([#3](https://github.com/AlexandraZambrano/jar-in/issues/3)): `monthlyIncome` summed foreign income raw (USD 1,000 + EUR 1,000 = "2,000"); it now converts into the jars' currency at a cached ECB rate and leaves out (and names) any currency without one. Also fixed a race in 0013 (concurrent syncs double-posted a month). 99 unit tests, 9 e2e.
 - **2026-09-30** — **0015 🟡 sub-category analytics** ([#4](https://github.com/AlexandraZambrano/jar-in/issues/4)): flow jar detail gets a *Where it went* card — this month's spend per sub-category, share of the month, and last month alongside — from a pure `subCategoryBreakdown()` the Phase 3 narration can reuse. 103 unit tests. **Phase 2 feature work complete, pending review/merge of #5, #7, #8.**
+- **2026-10-22** — Phase 2 shipped to production (releases #10/#11). Planned **Phase 2b — bring-your-own Elasticsearch** (spec 0016, ADR 0006 proposed): ES as source of truth when connected, RxDB as the cache, via RxDB's replication protocol; 7 issues (#12–#18). **TDD is now the workflow**: tests are committed before the implementation (`WORKFLOW.md`, spec template).

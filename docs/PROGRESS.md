@@ -5,6 +5,30 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-10-22 — Elasticsearch connector: planned, and TDD adopted
+
+Request: keep a user's data in their **own** Elasticsearch (Docker, on a
+volume) and explore it in Kibana, all local.
+
+**Decided (ADR 0006, proposed):** Elasticsearch is the source of truth
+*when connected*; RxDB stays as the on-device cache so none of the 36
+files that read or write collections change. They're kept in step by
+RxDB's built-in replication protocol with custom `push`/`pull` over the ES
+REST API. Rejected: a custom `RxStorage` on ES (large interface, refresh
+lag breaks read-after-write, dies with Docker off), a full data-layer
+rewrite, and a one-way mirror.
+
+**Added (docs only):** spec 0016 with 7 tasks, each with its tests-first
+list; ADR 0006; ROADMAP Phase 2b; issues #12–#18 on the board.
+
+**Process change — TDD:** `WORKFLOW.md` loop is now SPEC → RED → GREEN →
+CHECK; the definition of done requires a `test:` commit before the
+`feat:` commit; the spec template's "Test notes" became "Test plan
+(written first)".
+
+**Next:** #12, the spike — everything else depends on whether a browser
+can reach `localhost:9200` from the production origin.
+
 ## 2026-09-30 — 0015 sub-category analytics (issue #4)
 
 Transactions have carried an optional sub-category since 0005, but

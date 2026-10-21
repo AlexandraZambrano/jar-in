@@ -11,12 +11,18 @@ match reality. Nothing large is coded before its feature spec exists.
               data touched, screens, out-of-scope
             git commit -m "docs: spec <slug>"
 
-2. BUILD    implement against the acceptance criteria only
-            keep docs/DATA-MODEL.md in sync if schemas change
+2. RED      write the failing tests FIRST, from the acceptance criteria
+              unit (Vitest) for every pure function / repo
+              component (Testing Library) for UI states
+              e2e (Playwright, e2e/*.spec.ts) for the headline flow —
+                required if the feature adds a route or a mutation
+            run them, watch them fail for the right reason
+            git commit -m "test(<slug>): <behaviour> (red)"
 
-3. TEST     unit (Vitest) for every pure function — required
-            e2e (Playwright, e2e/*.spec.ts) for the headline flow —
-              required if the feature adds a route or a mutation
+3. GREEN    write the least code that passes; nothing the tests don't ask for
+            keep docs/DATA-MODEL.md in sync if schemas change
+            REFACTOR with the tests green
+            git commit -m "feat(<slug>): <what changed>"
 
 4. CHECK    npm run check                 → tsc + eslint + vitest, must be green
             npm run e2e                   → Playwright, must be green
@@ -30,7 +36,8 @@ match reality. Nothing large is coded before its feature spec exists.
             tick the row in docs/ROADMAP.md
             add a dated line to docs/PROGRESS.md
 
-7. COMMIT   git commit -m "feat(<slug>): <what changed>"
+7. PR       open the PR only once green (CI sees the last commit); the
+            description pastes the first red run as evidence
             (never add a Co-Authored-By / contributor trailer for Claude)
 ```
 
@@ -72,6 +79,8 @@ Project slash commands (in `.claude/commands/`):
 ## Definition of done (a feature)
 
 - [ ] Every acceptance criterion in the spec is met and hand-verified
+- [ ] Tests were written first: a `test:` commit precedes the `feat:`
+      commit, and the PR shows the red run
 - [ ] `npm run check` is green
 - [ ] `npm run e2e` is green; a new route or mutation has an `e2e/` spec
 - [ ] Schemas & `docs/DATA-MODEL.md` agree
