@@ -36,7 +36,7 @@ export default tseslint.config(
   {
     // Playwright e2e specs — Node + browser globals (page.evaluate runs in-page),
     // and no React fast-refresh concern.
-    files: ['e2e/**/*.ts'],
+    files: ['e2e/**/*.ts', 'e2e-es/**/*.ts'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
     rules: { 'react-refresh/only-export-components': 'off' },
   },
