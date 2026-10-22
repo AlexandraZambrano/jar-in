@@ -33,9 +33,12 @@ shared component.
 
 Explicitly what this feature does **not** do (and which later feature covers it).
 
-## Test notes
+## Test plan (written first)
 
-What gets unit tests (compute/selectors) vs. hand-verified.
+The failing tests to write **before** any implementation, one line each,
+mapped to the acceptance criteria above. Say which layer: unit,
+component, e2e, or integration. Anything left to hand-verification must be
+listed here with the reason.
 
 ## Changelog
 
