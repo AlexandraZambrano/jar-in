@@ -14,7 +14,14 @@ export default defineConfig({
   reporter: [['list']],
   globalSetup: './e2e-es/global-setup.ts',
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Chromium gates "public page -> localhost" behind a one-time user
+    // permission (Local Network Access). This project is the user who said yes…
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], permissions: ['local-network-access'] },
+    },
+    // …and this one is the user who hasn't been asked / said no.
+    { name: 'chromium-no-permission', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
