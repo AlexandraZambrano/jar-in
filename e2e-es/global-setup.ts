@@ -44,7 +44,10 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
         expiration: '1h',
         role_descriptors: {
           jarin: {
-            cluster: ['manage_index_templates'],
+            // manage_index_templates: PUT _index_template. monitor: `GET /`
+            // (action cluster:monitor/main), which the connector's "test
+            // connection" and version display use.
+            cluster: ['manage_index_templates', 'monitor'],
             indices: [{ names: ['jarin-*'], privileges: ['all'] }],
           },
         },
