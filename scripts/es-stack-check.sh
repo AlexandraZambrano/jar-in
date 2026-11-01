@@ -23,7 +23,15 @@ APP="http://localhost:$APP_PORT"
 es() { curl -s -m 10 -u "elastic:$ELASTIC_PASSWORD" "$@"; }
 
 OUT=$(mktemp); fails=0; stack_started=1
-trap 'dc down -v >/dev/null 2>&1; rm -f "$OUT"' EXIT
+# On failure, show what the containers said before tearing them down — in CI
+# that output is the only evidence left.
+cleanup() {
+  if [ "$fails" -gt 0 ]; then
+    echo; echo "== container logs (last 40 lines each) =="; dc logs --no-color --tail 40 2>&1
+  fi
+  dc down -v >/dev/null 2>&1; rm -f "$OUT"
+}
+trap cleanup EXIT
 
 check() {
   local name=$1; shift

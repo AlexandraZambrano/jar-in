@@ -75,15 +75,17 @@ rules that differ per browser. Establish what works before building on it.
   access"; WebKit blocks it. Also confirmed: external-version 409s
   (server-side LWW) and the API-key privileges the connector needs.
 
-### 2. Docker stack with a persistent volume and snapshots
+### 2. Docker stack with a persistent volume and snapshots  ✅ *(issue #13 — guide in [ELASTICSEARCH.md](../ELASTICSEARCH.md#run-the-stack))*
 
 - `docker/elasticsearch/docker-compose.yml`: Elasticsearch 9.x single node
   (spike ran on 9.5.1; heap ≥ 1 GB, it won't start in 512 MB) + Kibana +
   **the Jars app** (this repo's `Dockerfile`) on `http://localhost:5173`, so
   Jars is served from localhost — the one path that works in every browser
   (spike). Host ports configurable (many machines already own 9200). Security **on** (password from `.env`, `.env.example` committed),
-  CORS for the app origins, a **named volume** (`jarin-esdata`) for data and
-  a second one (`jarin-essnapshots`) for snapshots, healthchecks, memory
+  CORS for the app origins, a **named volume** (`<project>_esdata`) for data and
+  a second one (`<project>_essnapshots`) for snapshots — *project-prefixed on
+  purpose*: a fixed name would let the isolated `es:check` run's `down -v`
+  delete a user's real data — healthchecks, memory
   limits.
 - A snapshot repository + a daily SLM policy so a lost volume is not a lost
   ledger.
@@ -205,6 +207,14 @@ in this browser and that data goes to the URL the user entered.
 
 ## Changelog
 
+- **2026-10-23** — task 2 (stack, #13) done, TDD: `scripts/es-stack-check.sh`
+  (9 checks) written first and red (no compose), then green. Built:
+  Elasticsearch 9.5.1 + Kibana + Jars on `localhost:5173`, named volumes,
+  daily SLM snapshot, CORS following `APP_PORT`, no default secrets.
+  Verified on a real `.env` with default ports: the app served by the stack
+  reaches Elasticsearch (`GET /` and `_bulk`) in Chromium, Firefox and WebKit
+  with no prompt; Kibana available. Deviation from the text above: volumes
+  are project-prefixed (`jarin-es_esdata`), not fixed `jarin-esdata`.
 - **2026-10-22** — task 1 (spike, #12) done, TDD: red (no stack) → red
   (stack, no CORS) → red (Chromium's Local Network Access, which a stubbed
   page can't distinguish from a real local one) → red (403: key lacked
