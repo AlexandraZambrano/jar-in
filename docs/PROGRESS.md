@@ -5,6 +5,29 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-10-22 — ES connector task 1 (#12): browser ↔ local Elasticsearch spike
+
+TDD, five loops: red (no stack) → red (stack, no CORS) → red (**Chromium's
+Local Network Access**: a public page can't call loopback without a user
+permission, and my `page.route`-stubbed "localhost" page counted as public)
+→ red (**403**: the scoped key needed `monitor` for `GET /`) → green, 30
+passed / 10 skipped over chromium, chromium-no-permission, firefox, webkit.
+
+**Measured:** localhost page → works in all engines; public
+`https://jars.alexzambrano.com` → Firefox ✅, Chromium ✅ only after the user
+allows local network access, WebKit ❌. Server-side LWW (external version →
+409) confirmed. Key needs `manage_index_templates` + `monitor` + `jarin-*`.
+Elasticsearch 9.5.1 needs ≥ 1 GB heap (512 MB hung > 3.5 min).
+
+**Design changes:** the Docker stack (#13) also serves the Jars app on
+`localhost:5173` (the path that works everywhere, incl. Safari); the UI (#17)
+shows a checklist because browser failures are opaque; restore (#16) doubles
+as the first-run for a fresh origin.
+
+**Process note:** this machine already runs another Elasticsearch on 9200
+(unrelated project). The spike stack is isolated (own project/volume, host
+port 19200) and never touches it.
+
 ## 2026-10-22 — Elasticsearch connector: planned, and TDD adopted
 
 Request: keep a user's data in their **own** Elasticsearch (Docker, on a

@@ -1,0 +1,34 @@
+# Throwaway Elasticsearch for the browser<->ES specs (`npm run es:up`).
+# NOT the user-facing stack — that is issue #13 (docker/elasticsearch/).
+#
+# Isolated on purpose: own project name, own volume, host port 19200, bound to
+# loopback. `npm run es:down` removes the volume (-v); nothing else is touched.
+name: jarin-es-spike
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.1
+    ports:
+      - "127.0.0.1:19200:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      # CORS: only the origins Jars is served from. Authorization is not in
+      # Elasticsearch's default allow-headers, and the connector needs it.
+      http.cors.enabled: "true"
+      http.cors.allow-origin: "http://localhost:5173,https://jars.alexzambrano.com"
+      http.cors.allow-headers: "X-Requested-With,Content-Type,Content-Length,Authorization"
+      ELASTIC_PASSWORD: ${ES_PASSWORD:-spike-only-change-me}
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+    mem_limit: 2560m
+    volumes:
+      - spike-esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  spike-esdata:

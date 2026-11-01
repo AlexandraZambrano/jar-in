@@ -76,8 +76,11 @@ Supabase path in Phase 5 reuses the same protocol.
 - **Cost:** a second copy of the data exists (the cache) — acceptable
   because it is rebuildable and RxDB owns its consistency.
 - **Risks, each with a task in spec 0016:** browser↔localhost behaviour
-  varies by engine (spike first, may force a relay or serving the app from
-  localhost); an Elasticsearch outage degrades to offline mode; a lost
+  varies by engine — **measured by the spike (#12)**: it works from a page
+  served on localhost in every engine, and from the public site only in
+  Firefox and in Chromium after a user permission, so the supported path is
+  serving Jars from localhost next to Elasticsearch (see
+  `docs/ELASTICSEARCH.md`); an Elasticsearch outage degrades to offline mode; a lost
   volume loses the ledger unless the snapshot policy is working; deleted
   documents are tombstones, so dashboards must filter them.
 - Single-device is the supported mode; two browsers on one Elasticsearch

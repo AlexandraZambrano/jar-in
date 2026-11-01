@@ -1,6 +1,6 @@
 # 0016 — Elasticsearch connector (opt-in, user-hosted)
 
-- **Status:** ⬜ planned — umbrella for issues #12–#18 (see *Tasks*)
+- **Status:** 🟡 in progress — task 1 (#12) done; umbrella for issues #12–#18 (see *Tasks*)
 - **Phase:** 2b (self-hosted data store)
 - **Spec refs:** SPEC.md §10 (local-first, sync boundary), ADR 0002, ADR 0006
 - **Depends on:** 0013 (deterministic allocation ids make multi-writer safe)
@@ -54,7 +54,7 @@ Why not remove RxDB / write a custom RxStorage: see ADR 0006.
 
 Every task lists the tests to write **first**.
 
-### 1. Spike: can a browser talk to a local Elasticsearch?  *(blocks 2–7)*
+### 1. Spike: can a browser talk to a local Elasticsearch?  ✅ *(issue #12 — result in [ELASTICSEARCH.md](../ELASTICSEARCH.md))*
 
 Elasticsearch needs CORS enabled, and a page on `https://jars.alexzambrano.com`
 calling `http://localhost:9200` hits mixed-content and (Chrome) local-network
@@ -69,11 +69,19 @@ rules that differ per browser. Establish what works before building on it.
   real Elasticsearch, performs `GET /`, `PUT` an index template and `POST
   _bulk` from a page on a different origin, per browser engine, asserting
   success or the documented failure. The matrix is the spec's output.
+- **Result: go, with one supported path per browser.** A page served on
+  localhost reaches Elasticsearch in every engine; the *public* site does in
+  Firefox, and in Chromium only after the user allows "local network
+  access"; WebKit blocks it. Also confirmed: external-version 409s
+  (server-side LWW) and the API-key privileges the connector needs.
 
 ### 2. Docker stack with a persistent volume and snapshots
 
-- `docker/elasticsearch/docker-compose.yml`: Elasticsearch 8 single node +
-  Kibana, security **on** (password from `.env`, `.env.example` committed),
+- `docker/elasticsearch/docker-compose.yml`: Elasticsearch 9.x single node
+  (spike ran on 9.5.1; heap ≥ 1 GB, it won't start in 512 MB) + Kibana +
+  **the Jars app** (this repo's `Dockerfile`) on `http://localhost:5173`, so
+  Jars is served from localhost — the one path that works in every browser
+  (spike). Host ports configurable (many machines already own 9200). Security **on** (password from `.env`, `.env.example` committed),
   CORS for the app origins, a **named volume** (`jarin-esdata`) for data and
   a second one (`jarin-essnapshots`) for snapshots, healthchecks, memory
   limits.
@@ -95,7 +103,7 @@ config), `client.ts` (thin `fetch` wrapper: `ping`, `ensureTemplates`,
 
 - **Tests first** (unit, `fetch` stubbed like `fxRepo.test.ts`): config
   round-trips and rejects a non-URL; every request carries the `ApiKey`
-  header; `ping` maps 401/403/network errors to distinct typed errors;
+  header; `ping` (`GET /`, needs the `monitor` cluster privilege) maps 401/403/network errors to distinct typed errors;
   `ensureTemplates` is idempotent; `bulk` builds correct NDJSON with
   `_id`, external `version` and per-item error reporting; `search` pages
   with `search_after`.
@@ -132,7 +140,7 @@ What happens when connection is switched on:
 | Local cache | Elasticsearch | Action |
 |---|---|---|
 | has data | empty | initial **push** of everything |
-| empty | has data | **restore**: pull everything; the app must not route to `/welcome` while hydrating (the first-run gate waits for the initial pull) |
+| empty | has data | **restore** (also what a fresh `localhost:5173` origin needs — IndexedDB is per origin): pull everything; the app must not route to `/welcome` while hydrating (the first-run gate waits for the initial pull) |
 | has data | has data | merge by `updatedAt` (LWW); show a one-time summary ("12 from Elasticsearch, 3 pushed") |
 | empty | empty | nothing, normal onboarding |
 
@@ -151,8 +159,13 @@ Connect / Disconnect, and a status chip (Off · Connecting · Synced ·
 Offline — retrying · Error: …). Copy states plainly that the key is stored
 in this browser and that data goes to the URL the user entered.
 
+- A failed `fetch` is opaque (CORS, the Chromium permission, mixed content
+  and "Elasticsearch is down" all look the same), so a network failure shows
+  a **checklist**, not one guessed cause; 401/403 are distinguishable and
+  get their own messages. Copy points Safari/Chromium users at the
+  served-from-localhost path.
 - **Tests first:** component tests (Testing Library) for each status and
-  error message (401, 403, CORS/network); an e2e spec (Playwright
+  error message (401, 403, network → checklist); an e2e spec (Playwright
   `page.route` standing in for Elasticsearch) that connects, creates a
   transaction and sees the `_bulk` request; the connect button is disabled
   until the test passes; a11y: fields labelled, status announced
@@ -192,5 +205,12 @@ in this browser and that data goes to the URL the user entered.
 
 ## Changelog
 
+- **2026-10-22** — task 1 (spike, #12) done, TDD: red (no stack) → red
+  (stack, no CORS) → red (Chromium's Local Network Access, which a stubbed
+  page can't distinguish from a real local one) → red (403: key lacked
+  `monitor`) → green, 30 passed / 10 skipped across chromium,
+  chromium-no-permission, firefox, webkit. Verdict and matrix in
+  [ELASTICSEARCH.md](../ELASTICSEARCH.md); it changes #13 (add the app
+  container, memory, ports), #16 and #17 (above).
 - **2026-10-22** — spec drafted after the "keep my data in my own
   Elasticsearch" request; design chosen over a custom `RxStorage` (ADR 0006).
