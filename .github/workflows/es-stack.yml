@@ -1,0 +1,40 @@
+name: ES stack
+
+# Runs the real Elasticsearch + Kibana + Jars stack (docker/elasticsearch) and
+# asserts it works. Slow (~8 min: pulls two images, builds the app), so it only
+# runs when something it depends on changes.
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'docker/elasticsearch/**'
+      - 'scripts/es-stack-check.sh'
+      - 'Dockerfile'
+      - 'docker/nginx.conf'
+      - '.github/workflows/es-stack.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'docker/elasticsearch/**'
+      - 'scripts/es-stack-check.sh'
+      - 'Dockerfile'
+      - 'docker/nginx.conf'
+      - '.github/workflows/es-stack.yml'
+
+concurrency:
+  group: es-stack-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stack:
+    name: stack checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      # Elasticsearch's bootstrap checks want this on Linux hosts.
+      - run: sudo sysctl -w vm.max_map_count=262144
+
+      # Isolated copy of the stack; prints container logs itself if a check fails.
+      - run: bash scripts/es-stack-check.sh
