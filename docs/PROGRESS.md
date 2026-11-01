@@ -5,6 +5,18 @@ factual: what changed, what's verified, what's next.
 
 ---
 
+## 2026-11-01 — e2e coverage for Phase 2 (issue #22)
+
+Phase 2 shipped without e2e specs for the allocation ledger, FX rollup,
+sub-category card, withdrawals and CSV import. Added 5 Playwright specs
+(`e2e/allocations|fx-income|subcategories|withdrawals|import-csv.spec.ts`,
+9 → 18 tests) plus an `addSpend` helper. The FX specs stub Frankfurter with
+`page.route` and assert exactly one request. Each spec was proved non-vacuous
+by mutation (dedupe always false; withdrawals not subtracted; `convertMinor`
+returning its input; share forced to 0; history repriced on sync) — every
+mutation failed its spec and the source was restored. Selector lesson: use
+`exact: true` / roles, since chart `<title>`s and header chips repeat the text.
+
 ## 2026-10-22 — ES connector task 1 (#12): browser ↔ local Elasticsearch spike
 
 TDD, five loops: red (no stack) → red (stack, no CORS) → red (**Chromium's

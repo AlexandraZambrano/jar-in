@@ -24,6 +24,9 @@ match reality. Nothing large is coded before its feature spec exists.
             REFACTOR with the tests green
             git commit -m "feat(<slug>): <what changed>"
 
+   A spec written after the code (characterization) must be proved by
+   mutation: break the feature, watch the spec fail, restore it.
+
 4. CHECK    npm run check                 → tsc + eslint + vitest, must be green
             npm run e2e                   → Playwright, must be green
 

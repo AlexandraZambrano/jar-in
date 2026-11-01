@@ -51,13 +51,14 @@ Tracked on the [Jars board](https://github.com/users/AlexandraZambrano/jar-in/pr
 
 | # | Task | Issue | Status |
 |---|---|---|---|
-| 1 | Spike — can a browser talk to a local Elasticsearch? (CORS, mixed content) | [#12](https://github.com/AlexandraZambrano/jar-in/issues/12) | 🟡 in review |
-| 2 | Docker stack — persistent volume + snapshots | [#13](https://github.com/AlexandraZambrano/jar-in/issues/13) | ⬜ |
+| 1 | Spike — can a browser talk to a local Elasticsearch? (CORS, mixed content) | [#12](https://github.com/AlexandraZambrano/jar-in/issues/12) | ✅ merged (#20) |
+| 2 | Docker stack — persistent volume + snapshots | [#13](https://github.com/AlexandraZambrano/jar-in/issues/13) | 🟡 in review (#21) |
 | 3 | Elasticsearch client + config | [#14](https://github.com/AlexandraZambrano/jar-in/issues/14) | ⬜ |
 | 4 | Replication — push / pull / conflicts | [#15](https://github.com/AlexandraZambrano/jar-in/issues/15) | ⬜ |
 | 5 | First-connect & restore flow | [#16](https://github.com/AlexandraZambrano/jar-in/issues/16) | ⬜ |
 | 6 | Settings UI — connect, test, status | [#17](https://github.com/AlexandraZambrano/jar-in/issues/17) | ⬜ |
 | 7 | Kibana dashboards + guide | [#18](https://github.com/AlexandraZambrano/jar-in/issues/18) | ⬜ |
+| — | e2e specs for the Phase 2 features (mutation-checked) | [#22](https://github.com/AlexandraZambrano/jar-in/issues/22) | 🟡 in review |
 
 ## Phase 3 — AI layer (Groq)
 
