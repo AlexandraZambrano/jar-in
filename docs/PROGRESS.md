@@ -17,6 +17,31 @@ returning its input; share forced to 0; history repriced on sync) — every
 mutation failed its spec and the source was restored. Selector lesson: use
 `exact: true` / roles, since chart `<title>`s and header chips repeat the text.
 
+---
+
+## 2026-10-23 — ES connector task 2 (#13): the Docker stack
+
+TDD: `scripts/es-stack-check.sh` first (9 assertions, red because there was
+no compose file, 0.7 s), then `docker/elasticsearch/docker-compose.yml`,
+green 9/9. One design bug caught while writing the script: with no stack,
+every check waited out its own timeout (~4 min); now the rest fail
+immediately once the stack doesn't start.
+
+**Built:** Elasticsearch 9.5.1 + Kibana + the Jars app (from the repo
+`Dockerfile`) on `localhost:5173`; data on a named volume that survives
+`down` (only `down -v` deletes it); a one-shot `setup` registers the
+snapshot repository and a daily SLM policy and gives Kibana its password;
+`init-volumes` fixes root-owned volume permissions; CORS follows `APP_PORT`;
+no default secrets; ports configurable, bound to 127.0.0.1.
+
+**Verified for real** (not just the isolated check): a real `.env`, default
+ports, the page served by the stack reaches Elasticsearch in Chromium,
+Firefox and WebKit, Kibana is available; torn down afterwards, nothing left.
+
+**Safety decisions:** volumes are project-prefixed so the check's `down -v`
+can't delete a user's data; the guide warns that `docker volume prune` after
+a `down` deletes the data.
+
 ## 2026-10-22 — ES connector task 1 (#12): browser ↔ local Elasticsearch spike
 
 TDD, five loops: red (no stack) → red (stack, no CORS) → red (**Chromium's

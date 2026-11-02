@@ -45,6 +45,107 @@ request is ordinary CORS.
   allow local network access? Is this site in `http.cors.allow-origin`?"),
   not a single guessed cause.
 
+## Run the stack
+
+One command starts your own Elasticsearch, Kibana and Jars, all on your
+machine and bound to `127.0.0.1`. Needs Docker with Compose v2 and about
+4 GB of RAM available to Docker (Elasticsearch 2.5 GB, Kibana 1.5 GB).
+
+```bash
+cd docker/elasticsearch
+cp .env.example .env        # set ELASTIC_PASSWORD, KIBANA_PASSWORD, KIBANA_ENCRYPTION_KEY
+docker compose up -d        # first start builds Jars (~1 min); Elasticsearch is ready in ~30 s
+```
+
+| What | Where | Sign in |
+|---|---|---|
+| **Jars** | http://localhost:5173 | — |
+| **Kibana** | http://localhost:5601 | user `elastic`, your `ELASTIC_PASSWORD` |
+| **Elasticsearch** | http://localhost:9200 | an API key (below) |
+
+Use Jars **from http://localhost:5173**, not from the public site: a page
+on localhost is the one origin that reaches a local Elasticsearch in every
+browser, with no prompt (see the matrix above). Verified on the stack
+itself in Chromium, Firefox and WebKit.
+
+### Create the API key Jars asks for
+
+Scoped to `jarin-*` indices, so it can't read anything else on the cluster:
+
+```bash
+curl -s -u elastic:YOUR_ELASTIC_PASSWORD -X POST localhost:9200/_security/api_key \
+  -H 'Content-Type: application/json' -d '{
+    "name": "jars",
+    "role_descriptors": { "jarin": {
+      "cluster": ["manage_index_templates", "monitor"],
+      "indices": [{ "names": ["jarin-*"], "privileges": ["all"] }]
+    } }
+  }'
+```
+
+Copy the `encoded` value from the reply: that is what you paste into Jars
+(Settings → Elasticsearch, task #17). It is shown once.
+
+### Your data and the volume
+
+Elasticsearch writes to the named volume **`jarin-es_esdata`**. Removing the
+container does not remove it:
+
+| You do | Containers | Your data |
+|---|---|---|
+| `docker compose stop` / `down` | stopped / removed | **kept** |
+| `docker compose up -d` again | recreated | back, as you left it |
+| `docker compose down -v` | removed | **deleted**, and the snapshots volume too |
+| `docker volume prune`, `docker system prune --volumes` **after a `down`** | — | **deleted**: no container uses the volume, so Docker treats it as garbage |
+
+So: never prune volumes while the stack is down. Volume names carry the
+compose project name (`jarin-es`), which is also why `npm run es:check`
+(project `jarin-es-check`) can never touch yours.
+
+### Backups: daily snapshots
+
+While the stack is running, a policy snapshots every `jarin-*` index at
+**01:30** into the second volume (`jarin-es_essnapshots`), keeping 30 days
+(at least 5, at most 60 snapshots). This protects you from deleting or
+corrupting the data volume. It does **not** protect you from losing Docker's
+disk, so copy the snapshots out now and then:
+
+```bash
+docker run --rm -v jarin-es_essnapshots:/s -v "$PWD":/out alpine \
+  tar czf /out/jarin-snapshots-$(date +%F).tgz -C /s .
+```
+
+Take one by hand, list them, and restore an index:
+
+```bash
+AUTH='-u elastic:YOUR_ELASTIC_PASSWORD'
+curl -s $AUTH -X PUT "localhost:9200/_snapshot/jarin-local/manual-$(date +%F)?wait_for_completion=true"
+curl -s $AUTH "localhost:9200/_snapshot/jarin-local/_all?filter_path=snapshots.snapshot,snapshots.state"
+# restore: delete the damaged index first, then
+curl -s $AUTH -X DELETE localhost:9200/jarin-transactions
+curl -s $AUTH -X POST "localhost:9200/_snapshot/jarin-local/SNAPSHOT_NAME/_restore?wait_for_completion=true" \
+  -H 'Content-Type: application/json' -d '{"indices":"jarin-transactions"}'
+```
+
+### Ports and common problems
+
+Everything is configurable in `.env` (`ES_PORT`, `KIBANA_PORT`, `APP_PORT`).
+If you change `APP_PORT`, CORS follows it.
+
+| Symptom | Cause / fix |
+|---|---|
+| `port is already allocated` | Another service owns 9200 / 5601 / 5173 (another Elasticsearch, or `npm run dev`). Set a free port in `.env` |
+| Elasticsearch never gets healthy | Docker has too little memory. Give Docker Desktop ≥ 4 GB (the heap alone is 1 GB; 512 MB does not start 9.x) |
+| `variable is not set` on `up` | A secret is missing in `.env`; there are no default passwords on purpose |
+| Kibana says "not ready" | It waits for Elasticsearch and for the one-shot `setup` job; give it a minute, then `docker compose logs setup kibana` |
+| Browser says the request was blocked | You opened Jars from another origin. Use `http://localhost:APP_PORT`, or add the origin to `http.cors.allow-origin` |
+| `401` / `403` from Jars | Wrong key / a key without the privileges above |
+
+`npm run es:check` runs an isolated copy of this stack and asserts all of
+the above (valid compose, green cluster, Kibana, app served, CORS, data
+surviving `down`/`up`, snapshot + restore, `down -v` really deleting). It
+takes about 4 minutes the first time.
+
 ## Settings that work
 
 Elasticsearch (set as environment variables in Docker, or in
@@ -92,18 +193,24 @@ rejected per item with **409**, and the stored document (and `_version`)
 stay at the newer one. So conflict resolution is enforced by Elasticsearch,
 not only by the client.
 
-## Operational notes (feed into #13)
+## Operational notes (from the spike, applied in the stack)
 
 - **Memory:** Elasticsearch 9.5.1 with `-Xms512m -Xmx512m` and a 1.5 GB
   container limit did not finish starting in 3.5 minutes. With `-Xms1g
-  -Xmx1g` and a 2.5 GB limit it starts in ~30 s. Budget ≥ 1 GB heap.
+  -Xmx1g` and a 2.5 GB limit it starts in ~30 s. → the stack uses 1 GB / 2.5 GB.
 - **Ports:** many dev machines already run an Elasticsearch on `9200`
-  (this one did). The user-facing stack must not assume 9200 is free: make
-  the host port configurable.
-- **Version:** the spike ran on 9.5.1 (the 8.x line is also current, 8.19).
-  Nothing used here is 9-specific.
+  (this one did). → host ports are configurable in `.env`, and the checks
+  use their own (19200 / 15601 / 15173).
+- **Version:** the spike and the stack run 9.5.1 (the 8.x line is also
+  current, 8.19). Nothing used here is 9-specific.
 
 ## Reproduce
+
+```bash
+npm run es:check   # the user-facing stack (docker/elasticsearch), isolated, 9 checks
+```
+
+The spike's own throwaway node and browser matrix:
 
 ```bash
 npm run es:up      # isolated stack: project jarin-es-spike, host port 19200, own volume

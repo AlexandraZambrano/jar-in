@@ -1,0 +1,122 @@
+# Jars + your own Elasticsearch and Kibana, all on your machine (spec 0016,
+# ADR 0006). Start it:
+#
+#   cp .env.example .env      # then set the passwords
+#   docker compose up -d
+#
+# Then open Jars at http://localhost:5173 and connect it to
+# http://localhost:9200 (docs/ELASTICSEARCH.md). Jars is served from here on
+# purpose: a page on localhost is the one origin every browser lets talk to
+# a local Elasticsearch (spike #12).
+#
+# DATA: Elasticsearch writes to the named volume `<project>_esdata`, so
+# `docker compose down` (and removing the containers) keeps it. Only
+# `docker compose down -v` deletes it. A daily snapshot goes to the second
+# volume, `<project>_essnapshots`. Volumes are prefixed with the compose
+# project name (`jarin-es` by default) so an isolated copy of this stack —
+# like `npm run es:check` — can never touch yours.
+name: jarin-es
+
+x-es-image: &es-image docker.elastic.co/elasticsearch/elasticsearch:9.5.1
+
+services:
+  # Docker creates named volumes root-owned; Elasticsearch runs as uid 1000.
+  # Without this it cannot write snapshots.
+  init-volumes:
+    image: *es-image
+    user: root
+    entrypoint: ["sh", "-c", "chown -R 1000:0 /snapshots && chmod -R g+rwX /snapshots"]
+    volumes:
+      - essnapshots:/snapshots
+
+  elasticsearch:
+    image: *es-image
+    restart: unless-stopped
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${ES_PORT:-9200}:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in docker/elasticsearch/.env}
+      # 512 MB of heap does not start Elasticsearch 9.x (spike #12); 1 GB does, in ~30 s.
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      # Where snapshots may be written (the mounted volume below).
+      path.repo: /usr/share/elasticsearch/snapshots
+      # Local single node: on a nearly-full laptop disk the default watermarks
+      # would leave shards unassigned and block writes.
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+      # CORS: only where Jars is served from. Authorization is not in
+      # Elasticsearch's default allow-headers and the connector needs it.
+      http.cors.enabled: "true"
+      http.cors.allow-origin: "http://localhost:${APP_PORT:-5173},https://jars.alexzambrano.com"
+      http.cors.allow-headers: "X-Requested-With,Content-Type,Content-Length,Authorization"
+    mem_limit: 2560m
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - essnapshots:/usr/share/elasticsearch/snapshots
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  # One-shot: gives Kibana its service-account password, registers the
+  # snapshot repository and a daily snapshot policy. Idempotent (PUT/POST).
+  setup:
+    image: *es-image
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+      KIBANA_PASSWORD: ${KIBANA_PASSWORD:?set KIBANA_PASSWORD in docker/elasticsearch/.env}
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        put() { curl -sf -u "elastic:$$ELASTIC_PASSWORD" -X "$$1" "http://elasticsearch:9200$$2" -H 'Content-Type: application/json' -d "$$3" >/dev/null; }
+        put POST /_security/user/kibana_system/_password "{\"password\":\"$$KIBANA_PASSWORD\"}"
+        put PUT /_snapshot/jarin-local '{"type":"fs","settings":{"location":"/usr/share/elasticsearch/snapshots/jarin"}}'
+        put PUT /_slm/policy/jarin-daily '{"schedule":"0 30 1 * * ?","name":"<jarin-{now/d}>","repository":"jarin-local","config":{"indices":["jarin-*"],"include_global_state":false},"retention":{"expire_after":"30d","min_count":5,"max_count":60}}'
+        echo "kibana_system password, snapshot repository and daily policy are set"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.5.1
+    restart: unless-stopped
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${KIBANA_PORT:-5601}:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: ${KIBANA_PASSWORD}
+      # Must be >= 32 characters; keeps saved objects and sessions valid across restarts.
+      XPACK_SECURITY_ENCRYPTIONKEY: ${KIBANA_ENCRYPTION_KEY:?set KIBANA_ENCRYPTION_KEY (32+ chars) in docker/elasticsearch/.env}
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTION_KEY}
+      XPACK_REPORTING_ENCRYPTIONKEY: ${KIBANA_ENCRYPTION_KEY}
+    mem_limit: 1536m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+
+  # Jars itself, built from this repo's Dockerfile (nginx serving the PWA).
+  jars:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-5173}:80"
+
+volumes:
+  esdata:
+  essnapshots:

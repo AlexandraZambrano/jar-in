@@ -52,7 +52,7 @@ Tracked on the [Jars board](https://github.com/users/AlexandraZambrano/jar-in/pr
 | # | Task | Issue | Status |
 |---|---|---|---|
 | 1 | Spike — can a browser talk to a local Elasticsearch? (CORS, mixed content) | [#12](https://github.com/AlexandraZambrano/jar-in/issues/12) | ✅ merged (#20) |
-| 2 | Docker stack — persistent volume + snapshots | [#13](https://github.com/AlexandraZambrano/jar-in/issues/13) | 🟡 in review (#21) |
+| 2 | Docker stack — persistent volume + snapshots | [#13](https://github.com/AlexandraZambrano/jar-in/issues/13) | ✅ merged (#21) |
 | 3 | Elasticsearch client + config | [#14](https://github.com/AlexandraZambrano/jar-in/issues/14) | ⬜ |
 | 4 | Replication — push / pull / conflicts | [#15](https://github.com/AlexandraZambrano/jar-in/issues/15) | ⬜ |
 | 5 | First-connect & restore flow | [#16](https://github.com/AlexandraZambrano/jar-in/issues/16) | ⬜ |
@@ -101,3 +101,4 @@ Tracked on the [Jars board](https://github.com/users/AlexandraZambrano/jar-in/pr
 - **2026-09-30** — **0015 🟡 sub-category analytics** ([#4](https://github.com/AlexandraZambrano/jar-in/issues/4)): flow jar detail gets a *Where it went* card — this month's spend per sub-category, share of the month, and last month alongside — from a pure `subCategoryBreakdown()` the Phase 3 narration can reuse. 103 unit tests. **Phase 2 feature work complete, pending review/merge of #5, #7, #8.**
 - **2026-10-22** — Phase 2 shipped to production (releases #10/#11). Planned **Phase 2b — bring-your-own Elasticsearch** (spec 0016, ADR 0006 proposed): ES as source of truth when connected, RxDB as the cache, via RxDB's replication protocol; 7 issues (#12–#18). **TDD is now the workflow**: tests are committed before the implementation (`WORKFLOW.md`, spec template).
 - **2026-10-22** — **#12 spike done (in review)**: a browser can reach a local Elasticsearch directly, but the public site only in Firefox / Chromium-with-permission; supported path is serving Jars from localhost in the Docker stack. Server-side LWW confirmed. Findings in `docs/ELASTICSEARCH.md`.
+- **2026-10-23** — **#13 Docker stack done (in review)**: Elasticsearch + Kibana + Jars on one `docker compose up`, data on a named volume, daily snapshots, `npm run es:check` (9 checks, written first). Guide in `docs/ELASTICSEARCH.md`.

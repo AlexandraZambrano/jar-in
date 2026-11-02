@@ -22,7 +22,8 @@
     "icons": "node scripts/icons.mjs",
     "es:up": "docker compose -f e2e-es/docker-compose.yml up -d --wait",
     "es:down": "docker compose -f e2e-es/docker-compose.yml down -v",
-    "test:es": "playwright test -c playwright.es.config.ts"
+    "test:es": "playwright test -c playwright.es.config.ts",
+    "es:check": "bash scripts/es-stack-check.sh"
   },
   "dependencies": {
     "react": "^18.3.1",
