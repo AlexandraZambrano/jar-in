@@ -47,6 +47,9 @@ Why not remove RxDB / write a custom RxStorage: see ADR 0006.
 | Conflicts | Last-write-wins on `updatedAt`; tie → Elasticsearch (master) wins. Push uses Elasticsearch **external versioning** (`version` = `updatedAt` in ms, `version_type: external`), so a stale write is rejected by the server, not just by the client |
 | Direction of edits | Edits made directly in Elasticsearch flow back to the app (it is the master) |
 | Offline / ES down | The app keeps reading and writing the cache; the connector retries (`retryTime`) and drains the queue on reconnect. The status indicator says so |
+| Where Jars runs | Supported path = Jars served from `http://localhost:<APP_PORT>` by the Docker stack. Chromium needs a Local Network Access grant for https→localhost, WebKit blocks it outright, Firefox allows it (spike matrix in [ELASTICSEARCH.md](../ELASTICSEARCH.md)) |
+| Stack safety | No default secrets (`.env` required, `.env.example` committed); every host port bound to `127.0.0.1`; named volumes are **project-prefixed** by Compose, so `docker system prune --volumes` on a stopped stack is the one way to lose data (documented); disk watermarks off for a single-node laptop stack; backups = SLM `jarin-daily` 01:30, 30 d retention, repository `jarin-local` |
+| Isolation | Tests and checks never use port 9200/5601 (other projects own them). Spike and stack check run as their own Compose project on 19200 / 15601 / 15173 |
 | First connect | See task 5 |
 | Multi-device | Works as a side effect (two browsers, same ES), but is **not** a goal and not tested beyond LWW |
 
@@ -197,16 +200,36 @@ in this browser and that data goes to the URL the user entered.
 
 ## Test strategy
 
+TDD from 2026-10-21: the `test:` commit (shown red in the PR) precedes the
+`feat:` commit. Layers as they exist today:
+
 | Layer | Tooling | Runs in CI |
 |---|---|---|
-| Unit — client, config, handlers | Vitest, `fetch` stub + in-memory fake ES + in-memory RxDB | `check` job |
-| Component — settings, status | Vitest + Testing Library | `check` job |
-| e2e — connect flow | Playwright with `page.route` as ES | `e2e` job |
-| Integration — real Elasticsearch | Vitest/Playwright against a GitHub Actions `services:` container (`npm run test:es`) | new `es-integration` job |
-| Stack — persistence, snapshots | `scripts/es-stack-check.sh` | `es-integration` job |
+| Unit — pure logic (money, compute, csv, …) | Vitest | `check` job |
+| Integration — repos against a real RxDB | Vitest + `storage-memory` (`allocationsRepo`, `fxRepo`) | `check` job |
+| Component | Vitest + Testing Library (`ConfirmButton`) | `check` job |
+| e2e — user flows | Playwright, Chromium 390×844, production build on `vite preview`, fresh IndexedDB per test, network stubbed with `page.route` | `e2e` job |
+| e2e — real Elasticsearch (spike) | `e2e-es/`, 4 browser projects, `npm run test:es` | local only (needs Docker) |
+| Stack — persistence, snapshots, healthchecks | `scripts/es-stack-check.sh` (9 checks, dumps container logs on failure) | `es-stack.yml`, path-filtered |
+| Integration — connector vs real ES | Vitest against a Actions `services:` container | new `es-integration` job, lands with #14 |
+
+Planned for the connector (tasks 3–6): Vitest with a `fetch` stub and an
+in-memory fake ES for the client and replication handlers, Testing Library
+for the settings UI, a Playwright connect-flow spec with `page.route` as ES,
+and a manual real-Safari check (opaque failures) before closing #17.
+
+**Characterization specs must not be vacuous.** The Phase 2 features shipped
+before this rule, so issue #22 added their e2e specs afterwards. Each one was
+proved by *mutation*: break the feature on purpose, watch the spec fail,
+restore. Results are in the PR for #22.
 
 ## Changelog
 
+- **2026-11-01** — session wrap-up. Phase 2 e2e gap closed in #22 (5 specs,
+  18 e2e total, all mutation-checked). Lessons: ES 9.5.1 needs ≥ 1 GB heap;
+  container `HEALTHCHECK` must hit `127.0.0.1` (`localhost` resolves to `::1`,
+  refused); stacked PRs get no CI because the workflows only trigger on PRs
+  into `main`/`dev`, so branch off `dev`.
 - **2026-10-23** — task 2 (stack, #13) done, TDD: `scripts/es-stack-check.sh`
   (9 checks) written first and red (no compose), then green. Built:
   Elasticsearch 9.5.1 + Kibana + Jars on `localhost:5173`, named volumes,

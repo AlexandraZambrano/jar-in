@@ -35,3 +35,24 @@ export function trackNativeDialogs(page: Page): { count: number; last: string } 
   });
   return state;
 }
+
+/** Record a spend through the keypad, like a person would. `amount` is typed
+ *  digit by digit ("12.50"); `date` is YYYY-MM-DD (defaults to today). */
+export async function addSpend(
+  page: Page,
+  o: { amount: string; note: string; subCategory?: string; date?: string },
+): Promise<void> {
+  await page.goto('/add');
+  for (const ch of o.amount) {
+    await page
+      .getByRole('button', ch === '.' ? { name: 'Decimal point' } : { name: ch, exact: true })
+      .click();
+  }
+  if (o.subCategory) {
+    await page.getByLabel('Sub-category (optional)').selectOption({ label: o.subCategory });
+  }
+  if (o.date) await page.getByLabel('Date').fill(o.date);
+  await page.getByLabel('Note (optional)').fill(o.note);
+  await page.getByRole('button', { name: 'Save transaction' }).click();
+  await expect(page).toHaveURL((u) => new URL(u).pathname === '/');
+}
